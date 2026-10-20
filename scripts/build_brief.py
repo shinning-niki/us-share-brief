@@ -232,44 +232,93 @@ def news_block(b):
     for n in news:
         media = n.get("media") or ""
         m_html = f'<span class="ntag">{esc(media)}</span>' if media else ""
+        # 外媒条目附英文原题：中文是机器翻译，原文可供核对，避免译错被当成事实
+        en = n.get("title_en") or ""
+        en_html = f'<div class="ntitle-en">{esc(en)}</div>' if en else ""
         cards.append(f"""
       <article class="ncard">
         <div class="nhead"><span class="ntime">{esc(n.get('time', ''))}</span>{m_html}</div>
         <div class="ntitle">{esc(n.get('title', ''))}</div>
+        {en_html}
         <p class="nbody">{esc(n.get('summary', ''))}</p>
         <a class="src" href="{esc(n.get('url', '#'))}" target="_blank" rel="noopener">查看原文 ↗</a>
       </article>""")
+    src = "外媒一手信源 · 中文为机器翻译" if any(
+        n.get("kind") == "foreign" for n in news) else ""
+    sub = f'<span class="h2-sub">{esc(src)}</span>' if src else f'<span class="h2-sub">Top {len(news)}</span>'
     return f"""
   <section class="block">
-    <h2>今日要闻<span class="h2-sub">Top {len(news)}</span></h2>
+    <h2>今日要闻{sub}</h2>
     {"".join(cards)}
   </section>"""
 
 
-# ------------------------------------------------------------ 6. 明日展望
+# ------------------------------------------------------------ 6. 明日事件
+def calendar_block(b):
+    cal = b.get("calendar") or {}
+    earn = cal.get("earnings") or []
+    econ = cal.get("econ") or []
+    if not earn and not econ:
+        return ""
+
+    rows = []
+    for e in earn:
+        when = f'<span class="cal-when">{esc(e["when"])}</span>' if e.get("when") else ""
+        eps = f'<span class="cal-x">EPS 预期 {esc(e["eps"])}</span>' if e.get("eps") else ""
+        rows.append(f"""
+      <div class="cal-row">
+        <div class="cal-k">财报</div>
+        <div class="cal-main"><b>{esc(e.get('symbol', ''))}</b>
+          <span class="cal-sub">{esc((e.get('name') or '')[:26])}</span></div>
+        <div class="cal-v">{when}{eps}</div>
+      </div>""")
+    for e in econ:
+        cons = f'预期 <b>{esc(e["consensus"])}</b>' if e.get("consensus") else ""
+        prev = f' 前值 {esc(e["previous"])}' if e.get("previous") else ""
+        t = f'<span class="cal-when">{esc(e["time"])}</span>' if e.get("time") else ""
+        rows.append(f"""
+      <div class="cal-row">
+        <div class="cal-k">数据</div>
+        <div class="cal-main"><b>{esc(e.get('name', ''))}</b></div>
+        <div class="cal-v">{t}{cons}{prev}</div>
+      </div>""")
+
+    return f"""
+  <section class="block">
+    <h2>明日事件<span class="h2-sub">{esc(cal.get('date', ''))} · 美东时间 · 确定性事件而非观点</span></h2>
+    {"".join(rows)}
+  </section>"""
+
+
+# ------------------------------------------------------------ 7. 明日展望
 def outlook_block(b):
     ot = b.get("outlook") or []
     if not ot:
         return """
   <section class="block">
     <h2>明日展望</h2>
-    <p class="empty-note">未获取到当日海外策略研报，不做方向性判断。</p>
+    <p class="empty-note">未获取到可用的机构观点，不做方向性判断。</p>
   </section>"""
     cards = []
+    foreign = any(o.get("kind") == "foreign" for o in ot)
     for o in ot:
         digest = o.get("digest") or ""
         d_html = f'<p class="nbody">{esc(digest)}</p>' if digest else ""
+        en = o.get("title_en") or ""
+        en_html = f'<div class="ntitle-en">{esc(en)}</div>' if en else ""
         cards.append(f"""
       <article class="ncard ocard">
         <div class="nhead"><span class="org">{esc(o.get('org', ''))}</span>
           <span class="ntime">{esc(o.get('date', ''))}</span></div>
         <div class="ntitle">{esc(o.get('title', ''))}</div>
+        {en_html}
         {d_html}
-        <a class="src" href="{esc(o.get('url', '#'))}" target="_blank" rel="noopener">研报原文 ↗</a>
+        <a class="src" href="{esc(o.get('url', '#'))}" target="_blank" rel="noopener">原文 ↗</a>
       </article>""")
+    sub = "外媒观点 · 非投资建议" if foreign else "中文研报 · 外媒观点缺失时降级 · 非投资建议"
     return f"""
   <section class="block">
-    <h2>明日展望<span class="h2-sub">机构观点 · 非投资建议</span></h2>
+    <h2>明日展望<span class="h2-sub">{sub}</span></h2>
     {"".join(cards)}
   </section>"""
 
@@ -294,7 +343,8 @@ def build():
   </section>"""
     else:
         body = (hero(b) + sectors_block(b) + mag7_block(b)
-                + attribution_block(b) + news_block(b) + outlook_block(b))
+                + attribution_block(b) + news_block(b) + calendar_block(b)
+                + outlook_block(b))
 
     doc = f"""<!DOCTYPE html>
 <html lang="zh-CN">
@@ -399,7 +449,23 @@ def build():
   .src{{font-size:11.5px;color:#58a6ff;text-decoration:none;opacity:.9}}
   .src:active{{opacity:.5}}
   .ocard .ntitle{{font-size:13.5px}}
+  .ntitle-en{{font-size:11px;line-height:1.5;color:#5c6773;margin:-2px 0 6px;
+             display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}}
   .empty-note{{font-size:12.5px;color:var(--dim);margin:0}}
+
+  /* ---- 明日事件 ---- */
+  .cal-row{{display:grid;grid-template-columns:38px 1fr auto;gap:9px;align-items:baseline;
+           padding:7px 0;border-bottom:1px solid var(--line);font-size:12.5px}}
+  .cal-row:last-child{{border-bottom:0;padding-bottom:0}}
+  .cal-k{{font-size:10.5px;color:#58a6ff;letter-spacing:.04em}}
+  .cal-main{{color:#d5dde6;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}
+  .cal-main b{{font-weight:650;color:#e6edf3}}
+  .cal-sub{{color:var(--dim);font-size:11px;margin-left:5px}}
+  .cal-v{{font-size:11.5px;color:var(--muted);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}}
+  .cal-v b{{color:#e6edf3;font-weight:650}}
+  .cal-when{{display:inline-block;font-size:10px;color:#8b949e;border:1px solid #2a343f;
+            border-radius:4px;padding:0 4px;margin-right:5px}}
+  .cal-x{{color:var(--dim);font-size:11px}}
 
   .empty{{text-align:center;padding:56px 20px;color:var(--muted)}}
   .empty-icon{{width:52px;height:52px;border-radius:16px;background:var(--card);border:1px solid var(--line);
@@ -419,7 +485,8 @@ def build():
   </header>
 {body}
   <footer>
-    数据来源：腾讯行情（指数/ETF/个股行情） · 东方财富（资讯与研报） · 新浪财经（7×24 快讯）。<br>
+    行情数据：腾讯行情（指数/ETF/个股）。要闻与观点：WSJ · CNBC · MarketWatch · 美联储官网（英文原文机器翻译，附原文链接可核对）。
+    明日事件：Nasdaq 财报与经济数据日历。国内资讯仅在全部外媒不可用时降级兜底。<br>
     罗素2000 以 IWM、费城半导体以 SMH 作为代理标的，点位非指数原值，仅取涨跌幅。<br>
     归因为相关性判断，不构成因果结论；不构成投资建议。红涨绿跌。
   </footer>

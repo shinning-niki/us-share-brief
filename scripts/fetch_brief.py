@@ -21,6 +21,8 @@
 输出：data/brief.json、data/history.json、data/summary.md
 """
 
+import gzip
+import html as html_mod
 import json
 import os
 import re
@@ -29,6 +31,8 @@ import time
 import urllib.parse
 import urllib.request
 from datetime import datetime, timedelta, timezone
+from email.utils import parsedate_to_datetime
+from xml.etree import ElementTree as ETree
 
 try:
     from zoneinfo import ZoneInfo
@@ -267,6 +271,157 @@ def resolve_prev_amount(today_str, hist):
             print(f"[INFO] 上一交易日成交额取历史 {last}: {v/1e9:.1f} 亿美元")
             return v, last
     return 0.0, ""
+
+
+# ============================================================ 资讯：外媒 RSS
+# 国内财经媒体对美股的报道存在转述损耗与标题党，改为直接抓一手外媒。
+# GitHub Actions 跑在美国机房，这些源天然可达；本机若走代理可能仅部分可用，
+# 因此保留下面的国内源作兜底（外媒全挂时不至于开天窗）。
+FOREIGN_FEEDS = [
+    # (来源, 频道, RSS, 权重) —— 权重体现一手性：WSJ/美联储高于门户聚合
+    ("WSJ", "市场", "https://feeds.a.dj.com/rss/RSSMarketsMain.xml", 1.15),
+    ("WSJ", "美国商业", "https://feeds.a.dj.com/rss/WSJcomUSBusiness.xml", 0.95),
+    ("CNBC", "市场", "https://www.cnbc.com/id/20910258/device/rss/rss.html", 1.0),
+    ("CNBC", "科技", "https://www.cnbc.com/id/19854910/device/rss/rss.html", 0.9),
+    ("CNBC", "经济", "https://www.cnbc.com/id/10000664/device/rss/rss.html", 0.9),
+    ("CNBC", "头条", "https://www.cnbc.com/id/100003114/device/rss/rss.html", 0.8),
+    ("MarketWatch", "头条", "https://feeds.content.dowjones.io/public/rss/mw_topstories", 0.85),
+    ("MarketWatch", "盘中", "https://feeds.content.dowjones.io/public/rss/mw_marketpulse", 0.85),
+    ("美联储", "新闻稿", "https://www.federalreserve.gov/feeds/press_all.xml", 1.1),
+]
+
+
+def _fetch_bytes(url, timeout=15, retries=3):
+    """RSS 多为 gzip 压缩，需要字节级抓取后手动解压。
+
+    本机走代理时 SSL 偶发 UNEXPECTED_EOF，云端（美国机房）直连更稳，
+    但仍保留重试，避免单个源失败拖垮整条链路。
+    """
+    last = None
+    for i in range(retries):
+        try:
+            req = urllib.request.Request(url, headers={
+                "User-Agent": UA,
+                "Accept": "application/rss+xml,application/xml,text/xml,*/*",
+                "Accept-Encoding": "gzip, deflate",
+                "Connection": "close",
+            })
+            with urllib.request.urlopen(req, timeout=timeout) as r:
+                raw = r.read()
+                if r.headers.get("Content-Encoding") == "gzip":
+                    raw = gzip.decompress(raw)
+                return raw
+        except Exception as e:
+            last = e
+            if i < retries - 1:
+                time.sleep(1.5 * (i + 1))
+    raise last
+
+
+def strip_html(s):
+    s = html_mod.unescape(s or "")
+    s = re.sub(r"<[^>]+>", " ", s)
+    return re.sub(r"\s+", " ", s).strip()
+
+
+def fetch_foreign_news(start_dt, end_dt):
+    """抓外媒 RSS，统一成 {title, summary, url, dt, time, source, weight}。"""
+    out, seen = [], set()
+    start_cn = start_dt.astimezone(CN_TZ)
+    end_cn = end_dt.astimezone(CN_TZ)
+    for source, section, url, weight in FOREIGN_FEEDS:
+        try:
+            root = ETree.fromstring(_fetch_bytes(url))
+        except Exception as e:
+            print(f"[WARN] {source}/{section} 抓取失败 {type(e).__name__}", file=sys.stderr)
+            continue
+        n_ok = 0
+        for it in root.findall(".//item"):
+            title = strip_html(it.findtext("title", ""))
+            desc = strip_html(it.findtext("description", ""))
+            link = (it.findtext("link", "") or "").strip()
+            pub = (it.findtext("pubDate", "") or "").strip()
+            if not title or not link:
+                continue
+            try:
+                dt = parsedate_to_datetime(pub)
+                if dt.tzinfo is None:
+                    dt = dt.replace(tzinfo=timezone.utc)
+            except Exception:
+                continue
+            dt = dt.astimezone(CN_TZ)
+            if not (start_cn <= dt <= end_cn):
+                continue
+            key = title[:50].lower()
+            if key in seen:
+                continue
+            seen.add(key)
+            out.append({
+                "title": title, "summary": desc, "url": link, "dt": dt,
+                "time": dt.strftime("%H:%M"), "source": source,
+                "section": section, "weight": weight, "kind": "foreign",
+            })
+            n_ok += 1
+        print(f"[INFO] {source}/{section}: 窗口内 {n_ok} 条")
+        time.sleep(0.3)
+    out.sort(key=lambda x: x["dt"], reverse=True)
+    print(f"[INFO] 外媒合计 {len(out)} 条")
+    return out
+
+
+# ------------------------------------------------------------ 翻译
+_trans_cache = {}
+_google_ok = [True]      # 熔断开关：Google 一旦不通就整轮不再重试，避免每条都卡 12 秒
+
+
+def translate(text):
+    """英译中。优先 Google 免费端点（Actions 在美国机房通常直连可用），
+    失败降级 MyMemory，再失败保留英文——宁可给英文原文，也不编造中文。
+
+    Google 在国内走代理会握手超时，因此带熔断：失败一次即禁用，后续直接走 MyMemory，
+    否则每条翻译都等 12 秒，整个 job 会被拖到超时。
+    """
+    if not text:
+        return text
+    if not re.search(r"[A-Za-z]{4,}", text):
+        return text                     # 纯数字/符号不必翻
+    if text in _trans_cache:
+        return _trans_cache[text]
+
+    q = text[:480]
+
+    if _google_ok[0]:
+        try:
+            u = ("https://translate.googleapis.com/translate_a/single"
+                 "?client=gtx&sl=en&tl=zh-CN&dt=t&q=" + urllib.parse.quote(q))
+            t = _fetch(u, referer="https://translate.google.com/", retries=1, timeout=8)
+            if t:
+                j = json.loads(t)
+                zh = "".join(seg[0] for seg in j[0] if seg and seg[0])
+                if zh.strip():
+                    _trans_cache[text] = zh.strip()
+                    return zh.strip()
+            _google_ok[0] = False
+        except Exception:
+            _google_ok[0] = False
+            print("[INFO] Google 翻译不可达，本轮改用 MyMemory", file=sys.stderr)
+
+    # MyMemory 兜底
+    try:
+        u = ("https://api.mymemory.translated.net/get?langpair=en|zh-CN&q="
+             + urllib.parse.quote(q))
+        t = _fetch(u, retries=2, timeout=12)
+        if t:
+            j = json.loads(t)
+            zh = ((j.get("responseData") or {}).get("translatedText") or "").strip()
+            if zh and "MYMEMORY WARNING" not in zh.upper():
+                _trans_cache[text] = zh
+                return zh
+    except Exception:
+        pass
+
+    _trans_cache[text] = text
+    return text
 
 
 # ============================================================ 资讯：东财搜索
@@ -543,6 +698,194 @@ def pick_news(em_news, sina_feed, limit=3, focus_words=None):
             body = c["title"] + "。"
         c["summary"] = body
         c["no"] = i + 1
+    return out
+
+
+# ============================================================ 外媒要闻打分
+# 英文标题相关度用英文词表，与盘面挂钩时通过 THEME_LEX_EN 做中英映射
+EN_KEYWORDS = [
+    ("Federal Reserve", 12), ("FOMC", 11), ("Powell", 11), ("Fed ", 10),
+    ("inflation", 9), ("CPI", 10), ("jobs report", 10), ("payrolls", 10),
+    ("rate cut", 11), ("rate hike", 10), ("Treasury", 8), ("yield", 7),
+    ("earnings", 9), ("guidance", 8), ("quarterly", 6),
+    ("Nvidia", 10), ("Apple", 8), ("Tesla", 8), ("Microsoft", 8),
+    ("Amazon", 8), ("Meta", 7), ("Google", 7), ("Alphabet", 7),
+    ("Broadcom", 8), ("TSMC", 8), ("OpenAI", 8), ("Oracle", 7),
+    ("chip", 8), ("semiconductor", 8), ("data center", 7), ("AI ", 5),
+    ("tariff", 9), ("Trump", 8), ("White House", 7), ("shutdown", 8),
+    ("oil", 6), ("OPEC", 7), ("gold", 6), ("dollar", 6), ("bond", 6),
+    ("S&P", 6), ("Nasdaq", 6), ("Dow", 5), ("stocks", 5),
+    ("selloff", 7), ("rout", 7), ("recession", 8), ("layoff", 6),
+]
+# 个人理财/通讯稿类栏目，与盘面无关
+EN_NOISE = ["newsletter", "i'm ", "my husband", "my wife", "should i",
+            "here's how much", "i have $", "retirement savings", "529 plan",
+            "investing club", "homestretch", "what to watch", "morning squawk",
+            "cramer", "musk says he", "spacex share", "— plus", " - plus"]
+# CNBC 部分条目的 description 是栏目固定文案，不是新闻正文
+BAD_SUMMARY = ["每个工作日", "投资俱乐部", "订阅", "注册", "点击这里"]
+BAD_SUMMARY_EN = ["every weekday", "investing club", "homestretch", "sign up",
+                  "subscribe", "click here"]
+# 市场相关性闸门：不满足就直接剔除。
+# 只用关键词打分会把「OpenAI 涉嫌偷拍被拒保释」这类社会新闻选进来（它含 OpenAI 但无关市场），
+# 所以先要求标题落在市场/产业语汇里，再谈权重。
+# 注意 ai 必须用词边界：否则 OpenAI 里的 "AI" 会把社会新闻全放进来。
+MARKET_GATE = re.compile(
+    r"stock|share|market|investor|earning|trad|rally|selloff|rout|bounce|"
+    r"yield|bond|\bfed\b|fomc|inflation|tariff|econom|gdp|profit|revenue|"
+    r"valuation|\bipo\b|acquisition|merger|oil|gold|dollar|"
+    r"tech|chip|semiconductor|data center|cloud|software|"
+    r"nasdaq|s&p|dow|(?<![a-z])ai(?![a-z])", re.I)
+# 公司名单独出现不代表是市场新闻（「OpenAI 窃听案嫌疑人」含 OpenAI 但与社会新闻无异），
+# 必须叠加商业动作词才算。
+COMPANY_RE = re.compile(
+    r"nvidia|apple|tesla|microsoft|amazon\b|meta\b|google|alphabet|broadcom|"
+    r"tsmc|openai|oracle|jpmorgan|goldman|berkshire|netflix|lilly|intel\b|"
+    r"amd\b|boeing|disney|palantir|qualcomm", re.I)
+BIZ_ACTION = re.compile(
+    r"announc|launch|earning|beat|miss|guidance|acqui|merg|partner|invest|"
+    r"profit|revenue|sales|forecast|raise|layoff|expand|\bbuy\b|\bdeal\b|"
+    r"\bipo\b|contract|\border\b|sue|lawsuit|recall|approv", re.I)
+
+
+def market_related(title):
+    if MARKET_GATE.search(title):
+        return True
+    return bool(COMPANY_RE.search(title) and BIZ_ACTION.search(title))
+THEME_LEX_EN = {
+    "科技": ["tech", "AI", "software", "cloud", "data center", "apple", "microsoft"],
+    "半导体": ["chip", "semiconductor", "nvidia", "tsmc", "broadcom", "memory"],
+    "通信服务": ["google", "alphabet", "meta", "advertis", "streaming", "netflix"],
+    "可选消费": ["tesla", "amazon", "retail", "consumer", "auto"],
+    "必需消费": ["food", "beverage", "consumer staples", "procter", "coca"],
+    "金融": ["bank", "goldman", "jpmorgan", "morgan stanley", "insurance", "credit"],
+    "医疗保健": ["pharma", "drug", "lilly", "fda", "biotech", "health"],
+    "工业": ["industrial", "boeing", "defense", "airline", "manufactur"],
+    "材料": ["copper", "chemical", "steel", "material"],
+    "能源": ["oil", "crude", "opec", "energy", "natural gas"],
+    "公用事业": ["utility", "power grid", "nuclear", "electricity"],
+    "房地产": ["real estate", "reit", "housing", "mortgage"],
+}
+
+
+def pick_foreign_news(items, limit=3, focus_sectors=None):
+    """外媒要闻：英文词表打分 + 来源权重 + 与当日领涨方向的英文映射。"""
+    focus_words = []
+    for sec in (focus_sectors or []):
+        for key, ws in THEME_LEX_EN.items():
+            if key == sec or key in sec or sec in key:
+                focus_words.extend(ws)
+                break
+
+    cands = []
+    for it in items:
+        title = it["title"]
+        low = title.lower()
+        if any(n in low for n in EN_NOISE):
+            continue
+        if not market_related(title):
+            continue                          # 不落在市场/产业语汇里，直接跳过
+        hits = [(kw, w) for kw, w in EN_KEYWORDS if kw.lower() in low]
+        base = sum(w for _, w in hits)
+        if base <= 0:
+            continue
+        score = base * it.get("weight", 1.0)
+        if any(w in low for w in focus_words):
+            score += 8                       # 与当日领涨方向相关
+        if it["source"] == "美联储":
+            score += 4                       # 一手政策源，优先级高
+        topic = (max(hits, key=lambda x: x[1])[0] if hits else "其他")
+        cands.append({"score": score, "item": it, "topic": topic})
+
+    cands.sort(key=lambda x: (-x["score"], x["item"]["time"]))
+    out, used = [], set()
+    MIN_KEEP = 7           # 外媒条目平均分偏低（标题短、关键词命中少），门槛比国内源低
+    for c in cands:
+        if c["score"] < MIN_KEEP:
+            continue
+        k = c["topic"]
+        if k in used:
+            continue
+        used.add(k)
+        out.append(c["item"])
+        if len(out) >= limit:
+            break
+    if len(out) < limit:
+        for c in cands:
+            if c["item"] in out or c["score"] < MIN_KEEP:
+                continue
+            out.append(c["item"])
+            if len(out) >= limit:
+                break
+    return out
+
+
+# ============================================================ 明日事件（硬数据）
+def _nasdaq_json(url, timeout=15):
+    try:
+        raw = _fetch_bytes(url, timeout=timeout)
+        return json.loads(raw.decode("utf-8"))
+    except Exception as e:
+        print(f"[WARN] Nasdaq 接口失败 {type(e).__name__}", file=sys.stderr)
+        return None
+
+
+def fetch_earnings(date_str, limit=4):
+    """明日财报：按市值筛大公司，保留盘前/盘后时段标记。
+
+    这比「机构观点」更硬——是确定要发生的事，不是谁的观点。
+    """
+    d = _nasdaq_json(f"https://api.nasdaq.com/api/calendar/earnings?date={date_str}")
+    rows = ((d or {}).get("data") or {}).get("rows") or []
+
+    def mcap(r):
+        v = str(r.get("marketCap") or "").replace(",", "").strip()
+        try:
+            return float(v)
+        except ValueError:
+            return 0.0
+
+    rows = [r for r in rows if r.get("symbol")]
+    rows.sort(key=lambda r: -mcap(r))
+    out = []
+    for r in rows[:limit]:
+        t = (r.get("time") or "").strip()
+        when = {"time-pre-market": "盘前", "time-after-hours": "盘后"}.get(t, "")
+        out.append({
+            "symbol": r["symbol"],
+            "name": (r.get("name") or "").strip(),
+            "when": when,
+            "eps": (r.get("epsForecast") or "").strip(),
+        })
+    return out
+
+
+IMPORTANT_ECON = re.compile(
+    r"CPI|PPI|PCE|GDP|Nonfarm|Payroll|Unemployment|Jobless|Retail Sales|"
+    r"Consumer Confidence|Consumer Sentiment|ISM|PMI|Housing|Durable|"
+    r"FOMC|Fed Chair|Interest Rate|Trade Balance|Inflation|Average Earnings",
+    re.I)
+
+
+def fetch_econ_events(date_str, limit=4):
+    """明日美国重要经济数据：事件名 + 预期值 + 前值。"""
+    d = _nasdaq_json(f"https://api.nasdaq.com/api/calendar/economicevents?date={date_str}")
+    rows = ((d or {}).get("data") or {}).get("rows") or []
+    out = []
+    for r in rows:
+        if (r.get("country") or "") != "United States":
+            continue
+        name = (r.get("eventName") or "").strip()
+        if not name or not IMPORTANT_ECON.search(name):
+            continue
+        out.append({
+            "time": (r.get("gmt") or "").strip(),
+            "name": name,
+            "consensus": (r.get("consensus") or "").strip(),
+            "previous": (r.get("previous") or "").strip(),
+        })
+        if len(out) >= limit:
+            break
     return out
 
 
@@ -902,6 +1245,46 @@ def main():
             end_cn = now
         print(f"[INFO] 资讯窗口 {start_cn:%m-%d %H:%M} → {end_cn:%m-%d %H:%M}（北京时间）")
 
+        focus_sectors = [x["name"] for x in sorted(
+            quotes["sectors"], key=lambda y: -y["pct"])[:4] if x["pct"] > 0]
+
+        # ---------- 外媒要闻（主源） ----------
+        # 国内媒体对美股的转述有损耗和标题党，改为直接读一手外媒再译。
+        foreign = []
+        try:
+            foreign = fetch_foreign_news(start_cn, end_cn)
+        except Exception as e:
+            print(f"[WARN] 外媒抓取失败 {e}", file=sys.stderr)
+
+        news = []
+        used_urls = set()          # 要闻已占用的链接，展望不能再重复
+        if foreign:
+            picked = pick_foreign_news(foreign, limit=3, focus_sectors=focus_sectors)
+            print(f"[INFO] 外媒要闻选中 {len(picked)} 条，开始翻译")
+            for i, it in enumerate(picked, 1):
+                zh_title = translate(it["title"])
+                time.sleep(0.6)
+                body_en = it["summary"] or ""
+                zh_body = translate(body_en) if body_en else ""
+                if zh_body:
+                    time.sleep(0.6)
+                # 部分 CNBC 条目的 description 是栏目固定文案（“每个工作日发布 Homestretch”），
+                # 不是新闻内容，检测到就丢弃、回退到标题，避免摘要跑题。
+                if any(b in (zh_body or "") for b in BAD_SUMMARY) or \
+                   any(b.lower() in body_en.lower() for b in BAD_SUMMARY_EN):
+                    zh_body = ""
+                news.append({
+                    "no": i,
+                    "time": it["time"],
+                    "title": zh_title,
+                    "title_en": it["title"],
+                    "summary": (zh_body or zh_title)[:160],
+                    "url": it["url"],
+                    "media": f'{it["source"]} · {it["section"]}',
+                    "kind": "foreign",
+                })
+                used_urls.add(it["url"])
+        # ---------- 国内兜底（外媒全挂时不开天窗） ----------
         em_news, feed = [], []
         try:
             em_news = fetch_em_news(start_cn, end_cn)
@@ -912,22 +1295,87 @@ def main():
         except Exception as e:
             print(f"[WARN] 新浪快讯失败 {e}", file=sys.stderr)
 
-        try:
-            focus = [x["name"] for x in sorted(
-                quotes["sectors"], key=lambda y: -y["pct"])[:4] if x["pct"] > 0]
-            focus += [x["name"] for x in sorted(
-                quotes["mag7"], key=lambda y: -y["pct"])[:2] if x["pct"] > 0]
-            brief["news"] = pick_news(em_news, feed, limit=3, focus_words=focus)
-        except Exception as e:
-            print(f"[WARN] 要闻失败 {e}", file=sys.stderr)
+        if not news:
+            print("[WARN] 外媒无可用量，降级国内资讯源")
+            try:
+                focus = focus_sectors + [x["name"] for x in sorted(
+                    quotes["mag7"], key=lambda y: -y["pct"])[:2] if x["pct"] > 0]
+                news = pick_news(em_news, feed, limit=3, focus_words=focus)
+            except Exception as e:
+                print(f"[WARN] 国内要闻也失败 {e}", file=sys.stderr)
+        brief["news"] = news
 
+        # ---------- 明日事件（硬数据，比观点可靠） ----------
         try:
-            brief["outlook"] = fetch_strategy_reports()
+            nxt = trade_day + timedelta(days=1)
+            while nxt.weekday() >= 5:
+                nxt += timedelta(days=1)
+            nd = nxt.strftime("%Y-%m-%d")
+            brief["calendar"] = {
+                "date": nd,
+                "earnings": fetch_earnings(nd),
+                "econ": fetch_econ_events(nd),
+            }
+            print(f"[INFO] 明日({nd}) 财报 {len(brief['calendar']['earnings'])} 家 / "
+                  f"经济数据 {len(brief['calendar']['econ'])} 项")
         except Exception as e:
-            print(f"[WARN] 研报失败 {e}", file=sys.stderr)
+            print(f"[WARN] 日历失败 {e}", file=sys.stderr)
+
+        # ---------- 明日展望：优先外媒机构观点，其次国内研报 ----------
+        try:
+            # 个人财经节目（Cramer / Mad Money 类）是评论秀，不是机构研究观点，
+            # 放在「展望」里会污染信息质量，先剔除；机构研究/分析师表述优先。
+            personal = re.compile(r"cramer|mad money|suze orman|dave ramsey", re.I)
+            inst = re.compile(r"goldman|jpmorgan|morgan stanley|bank of america|"
+                              r"citi|ubs|strategist|analyst|economist|research note|"
+                              r"survey|fed official|treasury secretary", re.I)
+            view_re = re.compile(r"expect|forecast|outlook|predict|says|warns|sees|"
+                                 r"strategist|analyst|estimate", re.I)
+            pool_v = [n for n in foreign
+                      if view_re.search(n["title"])
+                      and not personal.search(n["title"])
+                      and not any(x in n["title"].lower() for x in EN_NOISE)
+                      and n["url"] not in used_urls]      # 不能把要闻原样搬来当展望
+            pool_v.sort(key=lambda x: (0 if inst.search(x["title"]) else 1, -x.get("weight", 1)))
+            views, used_src = [], set()
+            for v in pool_v:                      # 第一轮：同源只取一条，保证视角分散
+                if v["source"] in used_src:
+                    continue
+                used_src.add(v["source"])
+                views.append(v)
+                if len(views) >= 2:
+                    break
+            if len(views) < 2:                    # 不足再放宽同源
+                for v in pool_v:
+                    if v in views:
+                        continue
+                    views.append(v)
+                    if len(views) >= 2:
+                        break
+            outlook = []
+            for v in views:
+                zh_t = translate(v["title"])
+                time.sleep(0.6)
+                zh_d = translate(v["summary"]) if v["summary"] else ""
+                time.sleep(0.6)
+                outlook.append({
+                    "org": f'{v["source"]} · {v["section"]}',
+                    "title": zh_t,
+                    "title_en": v["title"],
+                    "digest": (zh_d or "")[:140],
+                    "date": v["dt"].strftime("%m-%d %H:%M"),
+                    "url": v["url"],
+                    "kind": "foreign",
+                })
+            if not outlook:
+                print("[INFO] 外媒无机构观点，降级东财研报")
+                outlook = fetch_strategy_reports()
+            brief["outlook"] = outlook
+        except Exception as e:
+            print(f"[WARN] 展望失败 {e}", file=sys.stderr)
 
         # 归因用的催化候选池：东财正文稿 + 新浪事件型快讯
-        # （美股盘中的中文信息主要在快讯里，只用东财总结稿会大面积漏配）
+        # （归因文案是中文，用中文语料匹配更稳；外媒要闻不参与因果匹配）
         attr_pool = [{"time": n["time"], "title": n["title"], "url": n["url"]} for n in em_news]
         for f in feed:
             t, _ = split_title(f["text"])

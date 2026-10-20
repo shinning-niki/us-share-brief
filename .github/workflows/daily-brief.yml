@@ -1,0 +1,99 @@
+name: 美股收盘简报
+
+on:
+  schedule:
+    # GitHub Actions 使用 UTC。
+    # 23:40 UTC(周一至周五) = 北京时间次日 07:40 = 美东当日 19:40（夏令时）/18:40（冬令时）
+    # 即：北京周二至周六早上推「美东周一至周五」的收盘简报。
+    # 之所以不是北京周一推送——美东周日不开市，周一早上推的会是重复的周五数据。
+    - cron: '40 23 * * 1-5'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: us-share-brief
+  cancel-in-progress: false
+
+jobs:
+  brief:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    env:
+      TZ: Asia/Shanghai
+      PAGE_URL: ${{ vars.PAGE_URL || 'https://shinning-niki.github.io/us-share-brief/' }}
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: 抓取收盘数据
+        id: fetch
+        run: |
+          python scripts/fetch_brief.py
+          TRADING=$(python -c "import json;print(json.load(open('data/brief.json'))['is_trading_day'])")
+          echo "trading=$TRADING" >> $GITHUB_OUTPUT
+          echo "交易日: $TRADING"
+          if [ "$TRADING" = "False" ]; then
+            echo "::notice title=休市::美东当日非交易日，跳过部署与推送"
+          fi
+
+      - name: 生成手机版页面
+        if: steps.fetch.outputs.trading == 'True'
+        run: python scripts/build_brief.py
+
+      - name: 回写成交额历史
+        if: steps.fetch.outputs.trading == 'True'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/history.json
+          git diff --quiet --cached || git commit -m "chore: 更新成交额历史 $(date +%Y-%m-%d) [skip ci]"
+          git push || echo "::warning::历史文件推送失败，不影响本次简报"
+
+      - name: 配置 Pages
+        if: steps.fetch.outputs.trading == 'True'
+        uses: actions/configure-pages@v5
+
+      - name: 上传页面
+        if: steps.fetch.outputs.trading == 'True'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+      - name: 部署到 GitHub Pages
+        id: deploy
+        if: steps.fetch.outputs.trading == 'True'
+        uses: actions/deploy-pages@v4
+
+      - name: 推送到手机
+        if: steps.fetch.outputs.trading == 'True'
+        env:
+          FEISHU_WEBHOOK: ${{ secrets.FEISHU_WEBHOOK }}
+          BARK_URL: ${{ secrets.BARK_URL }}
+          SCT_KEY: ${{ secrets.SCT_KEY }}
+          PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
+          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+          TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
+        run: python scripts/notify.py
+
+      - name: 运行摘要
+        if: always()
+        run: |
+          echo "## 美股收盘简报运行记录" >> $GITHUB_STEP_SUMMARY
+          if [ -f data/summary.md ]; then
+            cat data/summary.md >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- 未生成运行摘要（抓取阶段可能异常）" >> $GITHUB_STEP_SUMMARY
+          fi

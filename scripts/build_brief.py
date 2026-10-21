@@ -261,32 +261,80 @@ def calendar_block(b):
     if not earn and not econ:
         return ""
 
-    rows = []
-    for e in earn:
-        when = f'<span class="cal-when">{esc(e["when"])}</span>' if e.get("when") else ""
-        eps = f'<span class="cal-x">EPS 预期 {esc(e["eps"])}</span>' if e.get("eps") else ""
-        rows.append(f"""
-      <div class="cal-row">
-        <div class="cal-k">财报</div>
-        <div class="cal-main"><b>{esc(e.get('symbol', ''))}</b>
-          <span class="cal-sub">{esc((e.get('name') or '')[:26])}</span></div>
-        <div class="cal-v">{when}{eps}</div>
+    def earn_item(e):
+        cn = e.get("name_cn") or ""
+        sec = e.get("sector") or ""
+        tags = ""
+        if cn:
+            tags += f'<span class="cal-cn">{esc(cn)}</span>'
+        if sec:
+            tags += f'<span class="cal-sec">{esc(sec)}</span>'
+        eps = e.get("eps") or ""
+        note = f'市场预期每股赚 <b>${esc(eps.lstrip("$"))}</b>' if eps else "未给出市场预期"
+        return f"""
+      <div class="cal-item">
+        <div class="cal-head"><b>{esc(e.get('symbol', ''))}</b>{tags}</div>
+        <div class="cal-note">{note}</div>
+      </div>"""
+
+    after = [e for e in earn if e.get("when") == "盘后"]
+    before = [e for e in earn if e.get("when") == "盘前"]
+    other = [e for e in earn if e.get("when") not in ("盘前", "盘后")]
+
+    groups = []
+    if after:
+        groups.append(f"""
+    <div class="cal-grp">
+      <div class="cal-grp-title">盘后公布<span class="cal-grp-sub">北京时间次日凌晨 · 影响下一个交易日的开盘</span></div>
+      {"".join(earn_item(e) for e in after)}
+    </div>""")
+    if before:
+        groups.append(f"""
+    <div class="cal-grp">
+      <div class="cal-grp-title">盘前公布<span class="cal-grp-sub">北京时间当晚开盘前 · 决定当晚开盘情绪</span></div>
+      {"".join(earn_item(e) for e in before)}
+    </div>""")
+    if other:
+        groups.append(f"""
+    <div class="cal-grp">
+      <div class="cal-grp-title">财报<span class="cal-grp-sub">时段未标注</span></div>
+      {"".join(earn_item(e) for e in other)}
+    </div>""")
+
+    if econ:
+        rows = []
+        for e in econ:
+            cn = e.get("name_cn") or ""
+            cn_html = f'<span class="cal-cn">{esc(cn)}</span>' if cn else ""
+            t = (f'<span class="cal-time">{esc(e["time"])} ET</span>'
+                 if e.get("time") else "")
+            bits = []
+            if e.get("consensus"):
+                bits.append(f'预期 <b>{esc(e["consensus"])}</b>')
+            if e.get("previous"):
+                bits.append(f'前值 {esc(e["previous"])}')
+            if e.get("trend"):
+                bits.append(esc(e["trend"]))
+            tip = (f'<div class="cal-tip">{esc(e["note"])}</div>'
+                   if e.get("note") else "")
+            rows.append(f"""
+      <div class="cal-item">
+        <div class="cal-head">{t}<b>{esc(e.get('name', ''))}</b>{cn_html}</div>
+        <div class="cal-note">{' · '.join(bits)}</div>
+        {tip}
       </div>""")
-    for e in econ:
-        cons = f'预期 <b>{esc(e["consensus"])}</b>' if e.get("consensus") else ""
-        prev = f' 前值 {esc(e["previous"])}' if e.get("previous") else ""
-        t = f'<span class="cal-when">{esc(e["time"])}</span>' if e.get("time") else ""
-        rows.append(f"""
-      <div class="cal-row">
-        <div class="cal-k">数据</div>
-        <div class="cal-main"><b>{esc(e.get('name', ''))}</b></div>
-        <div class="cal-v">{t}{cons}{prev}</div>
-      </div>""")
+        groups.append(f"""
+    <div class="cal-grp">
+      <div class="cal-grp-title">经济数据<span class="cal-grp-sub">美东时间 · 影响利率预期</span></div>
+      {"".join(rows)}
+    </div>""")
 
     return f"""
   <section class="block">
-    <h2>明日事件<span class="h2-sub">{esc(cal.get('date', ''))} · 美东时间 · 确定性事件而非观点</span></h2>
-    {"".join(rows)}
+    <h2>明日事件<span class="h2-sub">{esc(cal.get('date', ''))} · 确定会发生，不是预测</span></h2>
+    {"".join(groups)}
+    <p class="disclaimer">EPS 指每股收益：实际值高于市场预期通常利好，低于预期通常利空。
+      预期值来自分析师一致预测的中位数，不是公司指引。</p>
   </section>"""
 
 
@@ -454,18 +502,22 @@ def build():
   .empty-note{{font-size:12.5px;color:var(--dim);margin:0}}
 
   /* ---- 明日事件 ---- */
-  .cal-row{{display:grid;grid-template-columns:38px 1fr auto;gap:9px;align-items:baseline;
-           padding:7px 0;border-bottom:1px solid var(--line);font-size:12.5px}}
-  .cal-row:last-child{{border-bottom:0;padding-bottom:0}}
-  .cal-k{{font-size:10.5px;color:#58a6ff;letter-spacing:.04em}}
-  .cal-main{{color:#d5dde6;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}
-  .cal-main b{{font-weight:650;color:#e6edf3}}
-  .cal-sub{{color:var(--dim);font-size:11px;margin-left:5px}}
-  .cal-v{{font-size:11.5px;color:var(--muted);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}}
-  .cal-v b{{color:#e6edf3;font-weight:650}}
-  .cal-when{{display:inline-block;font-size:10px;color:#8b949e;border:1px solid #2a343f;
-            border-radius:4px;padding:0 4px;margin-right:5px}}
-  .cal-x{{color:var(--dim);font-size:11px}}
+  .cal-grp{{margin-bottom:14px}}
+  .cal-grp:last-of-type{{margin-bottom:0}}
+  .cal-grp-title{{font-size:12px;font-weight:650;color:#e6edf3;margin-bottom:6px;
+                 display:flex;align-items:baseline;gap:7px;flex-wrap:wrap}}
+  .cal-grp-sub{{font-size:10.5px;color:var(--dim);font-weight:400}}
+  .cal-item{{padding:7px 0 7px 9px;border-left:2px solid #2a343f;margin-bottom:2px}}
+  .cal-item:last-child{{margin-bottom:0}}
+  .cal-head{{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;font-size:13px}}
+  .cal-head b{{color:#e6edf3;font-weight:680;font-variant-numeric:tabular-nums}}
+  .cal-cn{{font-size:12px;color:#c9d1d9}}
+  .cal-sec{{font-size:10px;color:#6e7681;border:1px solid #2a343f;border-radius:4px;padding:0 4px}}
+  .cal-time{{font-size:10.5px;color:#8b949e;font-variant-numeric:tabular-nums;
+    background:#1b222b;border-radius:3px;padding:0 5px;line-height:1.7}}
+  .cal-note{{font-size:12px;color:var(--muted);margin-top:2px;font-variant-numeric:tabular-nums}}
+  .cal-note b{{color:#e6edf3;font-weight:650}}
+  .cal-tip{{font-size:11px;color:#6e7681;margin-top:2px;line-height:1.6}}
 
   .empty{{text-align:center;padding:56px 20px;color:var(--muted)}}
   .empty-icon{{width:52px;height:52px;border-radius:16px;background:var(--card);border:1px solid var(--line);

@@ -821,6 +821,89 @@ def pick_foreign_news(items, limit=3, focus_sectors=None):
 
 
 # ============================================================ 明日事件（硬数据）
+# 财报日历只给 ticker 和 EPS 数字，对非交易员等于天书。
+# 这里补上「中文名 + 做什么」，并在渲染层补「盘前/盘后意味着什么」。
+COMPANY_INFO = {
+    "AAPL": ("苹果", "消费电子"), "MSFT": ("微软", "软件/云"),
+    "GOOGL": ("谷歌", "搜索/广告"), "AMZN": ("亚马逊", "电商/云"),
+    "NVDA": ("英伟达", "AI 芯片"), "META": ("Meta", "社交广告"),
+    "TSLA": ("特斯拉", "电动车"), "AVGO": ("博通", "芯片"),
+    "NFLX": ("奈飞", "流媒体"), "DIS": ("迪士尼", "影视/乐园"),
+    "GE": ("通用电气", "航空发动机"), "RTX": ("雷神技术", "军工"),
+    "ISRG": ("直觉外科", "手术机器人"), "LMT": ("洛克希德马丁", "军工"),
+    "BA": ("波音", "飞机制造"), "CAT": ("卡特彼勒", "工程机械"),
+    "LRCX": ("泛林集团", "半导体设备"), "AMAT": ("应用材料", "半导体设备"),
+    "ASML": ("阿斯麦", "光刻机"), "TSM": ("台积电", "晶圆代工"),
+    "MU": ("美光", "存储芯片"), "AMD": ("AMD", "芯片"),
+    "INTC": ("英特尔", "芯片"), "QCOM": ("高通", "手机芯片"),
+    "JPM": ("摩根大通", "银行"), "GS": ("高盛", "投行"),
+    "MS": ("摩根士丹利", "投行"), "BAC": ("美国银行", "银行"),
+    "WFC": ("富国银行", "银行"), "C": ("花旗", "银行"),
+    "V": ("Visa", "支付"), "MA": ("万事达", "支付"),
+    "PYPL": ("PayPal", "支付"), "AXP": ("美国运通", "支付"),
+    "JNJ": ("强生", "医药"), "PFE": ("辉瑞", "制药"),
+    "MRK": ("默沙东", "制药"), "LLY": ("礼来", "制药/减肥药"),
+    "ABBV": ("艾伯维", "制药"), "UNH": ("联合健康", "医疗保险"),
+    "TMO": ("赛默飞", "实验室设备"), "ABT": ("雅培", "医疗器械"),
+    "XOM": ("埃克森美孚", "石油"), "CVX": ("雪佛龙", "石油"),
+    "COP": ("康菲石油", "石油"), "SLB": ("斯伦贝谢", "油服"),
+    "WMT": ("沃尔玛", "零售"), "COST": ("好市多", "会员零售"),
+    "HD": ("家得宝", "家居建材"), "TGT": ("塔吉特", "零售"),
+    "NKE": ("耐克", "运动服饰"), "SBUX": ("星巴克", "餐饮"),
+    "MCD": ("麦当劳", "餐饮"), "KO": ("可口可乐", "饮料"),
+    "PEP": ("百事", "饮料/零食"), "PG": ("宝洁", "日用品"),
+    "PM": ("菲利普莫里斯", "烟草"), "MDLZ": ("亿滋", "零食"),
+    "GIS": ("通用磨坊", "食品"), "K": ("家乐氏", "食品"),
+    "CHWY": ("Chewy", "宠物电商"), "FRPT": ("Freshpet", "宠物鲜粮"),
+    "IBM": ("IBM", "IT 服务"), "ORCL": ("甲骨文", "数据库/云"),
+    "CRM": ("Salesforce", "企业软件"), "ADBE": ("Adobe", "创意软件"),
+    "NOW": ("ServiceNow", "企业软件"), "CSCO": ("思科", "网络设备"),
+    "UBER": ("优步", "出行"), "ABNB": ("爱彼迎", "民宿"),
+    "BKNG": ("Booking", "在线旅游"), "T": ("美国电话电报", "电信"),
+    "VZ": ("威瑞森", "电信"), "TMUS": ("T-Mobile", "电信"),
+    "BRK.B": ("伯克希尔", "控股"), "SAP": ("SAP", "企业软件"),
+}
+
+# 经济数据：「中文名 + 怎么看」。最后一项是"这条为什么值得看"。
+ECON_INFO = [
+    (re.compile(r"NAHB", re.I), ("全美住宅建筑商信心指数", "50 是荣枯线，低于 50 说明房市收缩")),
+    (re.compile(r"\bCPI\b", re.I), ("消费者物价指数", "通胀最直接的读数，直接决定降息预期")),
+    (re.compile(r"\bPPI\b", re.I), ("生产者物价指数", "上游成本，领先 CPI 一个环节")),
+    (re.compile(r"\bPCE\b", re.I), ("核心 PCE 物价", "美联储最看重的通胀指标")),
+    (re.compile(r"Nonfarm|Payroll", re.I), ("非农就业人数", "就业强弱的最直接读数，影响降息节奏")),
+    (re.compile(r"Unemployment", re.I), ("失业率", "就业市场的另一面")),
+    (re.compile(r"Jobless", re.I), ("初请失业金人数", "每周高频，裁员是否恶化的先行指标")),
+    (re.compile(r"\bGDP\b", re.I), ("GDP 增速", "经济总量的季度读数")),
+    (re.compile(r"Retail Sales", re.I), ("零售销售", "消费是否还有韧性")),
+    (re.compile(r"Consumer Confidence", re.I), ("消费者信心指数", "消费意愿的先行指标")),
+    (re.compile(r"Consumer Sentiment", re.I), ("密歇根消费者情绪", "含通胀预期分项")),
+    (re.compile(r"\bISM\b", re.I), ("ISM 制造业指数", "50 是荣枯线")),
+    (re.compile(r"\bPMI\b", re.I), ("PMI 采购经理指数", "50 是荣枯线")),
+    (re.compile(r"Housing|Durable", re.I), ("地产/耐用品数据", "利率敏感型需求的温度计")),
+    (re.compile(r"FOMC|Fed Chair|Interest Rate", re.I), ("美联储利率决议/讲话", "直接影响全市场定价锚")),
+]
+
+
+def econ_explain(name):
+    for rx, info in ECON_INFO:
+        if rx.search(name or ""):
+            return info
+    return ("", "")
+
+
+def trend_word(consensus, previous):
+    """预期 vs 前值的方向。数字比大小即可，不做任何预测。"""
+    def num(s):
+        try:
+            return float(str(s).replace("%", "").replace(",", "").strip())
+        except ValueError:
+            return None
+    a, b = num(consensus), num(previous)
+    if a is None or b is None:
+        return ""
+    if abs(a - b) < 1e-9:
+        return "预期与上期持平"
+    return "预期回升" if a > b else "预期回落"
 def _nasdaq_json(url, timeout=15):
     try:
         raw = _fetch_bytes(url, timeout=timeout)
@@ -849,11 +932,15 @@ def fetch_earnings(date_str, limit=4):
     rows.sort(key=lambda r: -mcap(r))
     out = []
     for r in rows[:limit]:
+        sym = r["symbol"].upper()
         t = (r.get("time") or "").strip()
         when = {"time-pre-market": "盘前", "time-after-hours": "盘后"}.get(t, "")
+        cn, sector = COMPANY_INFO.get(sym, ("", ""))
         out.append({
-            "symbol": r["symbol"],
+            "symbol": sym,
             "name": (r.get("name") or "").strip(),
+            "name_cn": cn,
+            "sector": sector,
             "when": when,
             "eps": (r.get("epsForecast") or "").strip(),
         })
@@ -878,11 +965,17 @@ def fetch_econ_events(date_str, limit=4):
         name = (r.get("eventName") or "").strip()
         if not name or not IMPORTANT_ECON.search(name):
             continue
+        cn, note = econ_explain(name)
+        cons = (r.get("consensus") or "").strip()
+        prev = (r.get("previous") or "").strip()
         out.append({
             "time": (r.get("gmt") or "").strip(),
             "name": name,
-            "consensus": (r.get("consensus") or "").strip(),
-            "previous": (r.get("previous") or "").strip(),
+            "name_cn": cn,
+            "note": note,
+            "consensus": cons,
+            "previous": prev,
+            "trend": trend_word(cons, prev),
         })
         if len(out) >= limit:
             break

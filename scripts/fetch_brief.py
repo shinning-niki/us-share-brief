@@ -826,7 +826,7 @@ def pick_foreign_news(items, limit=3, focus_sectors=None):
 COMPANY_INFO = {
     "AAPL": ("苹果", "消费电子"), "MSFT": ("微软", "软件/云"),
     "GOOGL": ("谷歌", "搜索/广告"), "AMZN": ("亚马逊", "电商/云"),
-    "NVDA": ("英伟达", "AI 芯片"), "META": ("Meta", "社交广告"),
+    "NVDA": ("英伟达", "AI 芯片"), "META": ("脸书母公司", "社交广告"),
     "TSLA": ("特斯拉", "电动车"), "AVGO": ("博通", "芯片"),
     "NFLX": ("奈飞", "流媒体"), "DIS": ("迪士尼", "影视/乐园"),
     "GE": ("通用电气", "航空发动机"), "RTX": ("雷神技术", "军工"),
@@ -879,12 +879,40 @@ ECON_INFO = [
     (re.compile(r"Consumer Sentiment", re.I), ("密歇根消费者情绪", "含通胀预期分项")),
     (re.compile(r"\bISM\b", re.I), ("ISM 制造业指数", "50 是荣枯线")),
     (re.compile(r"\bPMI\b", re.I), ("PMI 采购经理指数", "50 是荣枯线")),
-    (re.compile(r"Housing|Durable", re.I), ("地产/耐用品数据", "利率敏感型需求的温度计")),
+    (re.compile(r"Durable", re.I), ("耐用品订单", "企业资本开支意愿的先行读数")),
+    (re.compile(r"Housing|Home Sales|Construction", re.I),
+     ("房地产数据", "利率敏感型需求的温度计，看房贷利率如何传导到成交")),
     (re.compile(r"FOMC|Fed Chair|Interest Rate", re.I), ("美联储利率决议/讲话", "直接影响全市场定价锚")),
 ]
 
+# 同一个指标常常同时给出「总量」和「环比」两个值（Housing Starts 1.300M / 1.9%），
+# 只按指标名匹配会让两条显示成同一个名字，看起来像重复条目。
+# 这里用值里带的单位再区分一次：M/K/B 是总量，% 是环比。
+ECON_INFO_DETAIL = [
+    (re.compile(r"Housing Starts", re.I), "M",
+     ("新屋开工（年化户数）", "每月新开工的住宅数量，是房市的先行读数")),
+    (re.compile(r"Housing Starts", re.I), "%",
+     ("新屋开工（月率环比）", "同一指标较上个月的变化幅度")),
+    (re.compile(r"Building Permits", re.I), "M",
+     ("营建许可（年化户数）", "拿地到开工之间的前置审批，比开工更早一步")),
+    (re.compile(r"Building Permits", re.I), "%",
+     ("营建许可（月率环比）", "同一指标较上个月的变化幅度")),
+    (re.compile(r"GDPNow", re.I), None,
+     ("亚特兰大联储 GDPNow 模型",
+      "用已公布数据实时推算的季度 GDP 增速，不是官方终值，会随新数据反复修正")),
+    (re.compile(r"Existing Home Sales", re.I), None,
+     ("成屋销售", "二手房成交，占美国房屋交易的大头")),
+    (re.compile(r"New Home Sales", re.I), None,
+     ("新屋销售", "新房成交，比开工更贴近终端需求")),
+]
 
-def econ_explain(name):
+
+def econ_explain(name, value=""):
+    """返回 (中文名, 一句人话解读)。先按「指标名 + 值形态」精确匹配，再退回按名匹配。"""
+    v = str(value or "")
+    for rx, unit, info in ECON_INFO_DETAIL:
+        if rx.search(name or "") and (unit is None or unit in v):
+            return info
     for rx, info in ECON_INFO:
         if rx.search(name or ""):
             return info
@@ -894,8 +922,14 @@ def econ_explain(name):
 def trend_word(consensus, previous):
     """预期 vs 前值的方向。数字比大小即可，不做任何预测。"""
     def num(s):
+        t = (str(s or "").replace("%", "").replace(",", "")
+             .replace("$", "").replace("(", "-").replace(")", "").strip())
+        mul = 1.0
+        if t and t[-1].upper() in ("M", "K", "B"):
+            mul = {"K": 1e3, "M": 1e6, "B": 1e9}[t[-1].upper()]
+            t = t[:-1]
         try:
-            return float(str(s).replace("%", "").replace(",", "").strip())
+            return float(t) * mul
         except ValueError:
             return None
     a, b = num(consensus), num(previous)
@@ -965,9 +999,9 @@ def fetch_econ_events(date_str, limit=4):
         name = (r.get("eventName") or "").strip()
         if not name or not IMPORTANT_ECON.search(name):
             continue
-        cn, note = econ_explain(name)
         cons = (r.get("consensus") or "").strip()
         prev = (r.get("previous") or "").strip()
+        cn, note = econ_explain(name, cons)
         out.append({
             "time": (r.get("gmt") or "").strip(),
             "name": name,

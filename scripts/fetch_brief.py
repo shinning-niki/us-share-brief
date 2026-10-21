@@ -216,6 +216,17 @@ def fetch_all_quotes():
 
 
 # ============================================================ 交易日判定
+class FatalFetchError(RuntimeError):
+    """数据源异常导致无法生成简报——这不是休市，必须让工作流失败。
+
+    以前这种情况会被判成「休市」，工作流随之跳过部署和推送、并以
+    success 收尾：接口挂了，但你和 GitHub 都以为今天本来就该没简报。
+    这是最坏的一种失败——静默且看起来一切正常。
+
+    抛错之后：run 变红 → 触发 alert.py 告警 → 下一个冗余触发点自动重试。
+    """
+
+
 def expected_close_date(et_now):
     """当前应收盘的美东日期：16:00 前算上一日；周末回退到周五。"""
     d = et_now.date()
@@ -226,24 +237,56 @@ def expected_close_date(et_now):
     return d
 
 
+# 美股连续休市最多一天（独立日/圣诞/感恩节都是单日），所以「最近收盘日」
+# 只可能等于「应收盘日的上一个工作日」。差得更多就不是休市了。
+def prev_business_day(d):
+    """上一个工作日（跳过周末）。用来精确区分休市与数据源滞后。"""
+    d -= timedelta(days=1)
+    while d.weekday() >= 5:
+        d -= timedelta(days=1)
+    return d
+
+
 def judge_trading_day(trade_time, et_now):
     """用「行情时间的美东日期」对齐「应收盘日」判断是否休市。
 
     美股假日无公开的稳定中文接口，用对齐法可自动覆盖：
-    若行情日期早于应收盘日，说明应收盘日当天休市。
+    若行情日期正好停在应收盘日的前一个工作日，说明应收盘日当天休市。
+
+    但「行情日期早于应收盘日」有两种完全不同的成因，必须分开处理：
+      1. 应收盘日休市，最近收盘停在上一工作日 -> 正常，跳过推送
+      2. 行情接口挂了，返回空值或几天前的陈数据 -> 异常，必须抛错告警
+
+    区分依据不是「差几天」，而是「是否正好差一个工作日」：
+    周一休市时应收盘日周一、最近收盘是上周五，差 3 个自然日但仍只是
+    一个工作日；而接口若返回三天前的数据，那就会跨过不止一个工作日。
+    用工作日数判断，比用自然日数阈值准确得多。
     """
     if not trade_time:
-        return False, "", "未取到行情时间"
+        raise FatalFetchError(
+            "未取到行情时间：行情接口全部无响应，无法判断是休市还是接口故障。"
+            "为避免把接口故障伪装成休市，本次按失败处理。")
     try:
         q_date = datetime.strptime(trade_time[:10], "%Y-%m-%d").date()
     except ValueError:
-        return False, "", f"行情时间格式异常（{trade_time}）"
+        raise FatalFetchError(f"行情时间格式异常（{trade_time}），数据源返回了无法解析的内容。")
+
     exp = expected_close_date(et_now)
+
     if q_date == exp:
         return True, q_date.isoformat(), ""
-    if q_date < exp:
+    if q_date > exp:
+        # cron 延迟到美东 16:00 之后才跑，应收盘日已经滚到当天
+        return True, q_date.isoformat(), ""
+
+    prev_bd = prev_business_day(exp)
+    if q_date == prev_bd:
         return False, q_date.isoformat(), f"美东 {exp} 休市（最近收盘为 {q_date}）"
-    return True, q_date.isoformat(), ""
+
+    raise FatalFetchError(
+        f"行情数据异常：应收盘日 {exp}（上一工作日 {prev_bd}），"
+        f"但接口只返回 {q_date} 的数据。不是休市——休市时最近收盘应正好是 "
+        f"{prev_bd}。按数据源故障处理。")
 
 
 # ============================================================ 成交额历史
@@ -1324,12 +1367,28 @@ def main():
     }
 
     quotes, trade_time = fetch_all_quotes()
+    # 先打日志再判定：judge_trading_day 抛错时，这几行是排查的第一现场
+    print(f"[INFO] 行情时间 {trade_time or '无'} / 取到 指数{len(quotes.get('indices') or {})} "
+          f"板块{len(quotes.get('sectors') or {})} 权重股{len(quotes.get('mag7') or {})}")
     ok, trade_date, reason = judge_trading_day(trade_time, et_now)
-    print(f"[INFO] 行情时间 {trade_time or '无'} / 判定 {'交易日' if ok else '休市'} {reason}")
+    print(f"[INFO] 判定 {'交易日' if ok else '休市'} {reason}")
 
-    if not ok or not quotes.get("indices"):
-        brief["reason"] = reason or "未取到美股行情，无法生成简报"
+    if not ok:
+        # 只有「真休市」才会走到这里：judge_trading_day 已经把接口故障抛成
+        # FatalFetchError，不会再伪装成休市混进来
+        brief["reason"] = reason
     else:
+        # 判定为交易日，但数据残缺到没法成稿时，宁可失败告警也不要推一份
+        # 只有两三个板块的半成品
+        n_idx = len(quotes.get("indices") or {})
+        n_sec = len(quotes.get("sectors") or {})
+        if n_idx < 4:
+            raise FatalFetchError(
+                f"判定为交易日，但只取到 {n_idx} 个指数行情（至少需要 4 个）。")
+        if n_sec < 6:
+            raise FatalFetchError(
+                f"判定为交易日，但只取到 {n_sec} 个板块行情（至少需要 6 个）。")
+
         brief["is_trading_day"] = True
         brief["trade_date"] = trade_date
         brief["indices"] = quotes["indices"]

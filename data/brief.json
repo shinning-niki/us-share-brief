@@ -1,7 +1,7 @@
 {
   "date": "2026-10-21",
   "weekday": "周三",
-  "generated_at": "2026-10-21 13:28",
+  "generated_at": "2026-10-21 16:35",
   "is_trading_day": true,
   "items": [
     {
@@ -323,7 +323,7 @@
       {
         "symbol": "META",
         "name": "Meta Platforms, Inc.",
-        "name_cn": "Meta",
+        "name_cn": "脸书母公司",
         "sector": "社交广告",
         "when": "盘后",
         "eps": "$6.54"
@@ -357,19 +357,19 @@
       {
         "time": "08:30",
         "name": "Housing Starts",
-        "name_cn": "新屋开工（年化户数）",
-        "note": "每月新开工的住宅数量，是房市的先行读数",
-        "consensus": "1.300M",
-        "previous": "1.288M",
+        "name_cn": "新屋开工（月率环比）",
+        "note": "同一指标较上个月的变化幅度",
+        "consensus": "1.9%",
+        "previous": "-5.9%",
         "trend": "预期回升"
       },
       {
         "time": "08:30",
         "name": "Housing Starts",
-        "name_cn": "新屋开工（月率环比）",
-        "note": "同一指标较上个月的变化幅度",
-        "consensus": "1.9%",
-        "previous": "-5.9%",
+        "name_cn": "新屋开工（年化户数）",
+        "note": "每月新开工的住宅数量，是房市的先行读数",
+        "consensus": "1.300M",
+        "previous": "1.288M",
         "trend": "预期回升"
       },
       {

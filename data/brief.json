@@ -1,115 +1,115 @@
 {
-  "date": "2026-10-20",
-  "weekday": "周二",
-  "generated_at": "2026-10-20 20:23",
+  "date": "2026-10-21",
+  "weekday": "周三",
+  "generated_at": "2026-10-21 13:28",
   "is_trading_day": true,
   "items": [
     {
       "tag": "指数",
       "title": "收盘",
-      "text": "道琼斯 -0.07%、纳斯达克 +1.11%、标普500 +0.41%、罗素2000 +0.31%、费城半导体 +1.61%。",
+      "text": "道琼斯 +1.02%、纳斯达克 -0.02%、标普500 +0.28%、罗素2000 +1.66%、费城半导体 -0.38%。",
       "no": 1
     },
     {
       "tag": "结构",
       "title": "结构",
-      "text": "纳指显著强于道指，成长股承担了当日主要涨幅，资金愿意为远期现金流付溢价——这是风险偏好抬升的进攻型结构；费城半导体大涨，是当日风险偏好的最强读数。",
+      "text": "道指强于纳指，资金从长久期成长股撤向现金流确定的权重与防御板块，属于典型的风险规避式轮动；小盘罗素2000 跑赢标普，说明行情不只在权重股里，风险偏好向低流动性资产扩散。",
       "no": 2
     },
     {
       "tag": "广度",
       "title": "广度",
-      "text": "标普市值加权明显强于等权指数——指数是被少数超大权重股抬上去的，多数成分股并没有跟上，这种上涨的内部结构偏脆弱；MAG7 平均涨幅高出标普 1.2 个百分点，七巨头是当日指数的直接发动机。",
+      "text": "等权指数强于市值加权，说明上涨由多数个股共同推动，广度健康，不是靠几只巨头撑门面。",
       "no": 3
     },
     {
       "tag": "要闻",
-      "title": "谷歌表示，它可以以正确的方式建立数据中心。一些专",
-      "text": "谷歌表示，其明尼苏达州的人工智能数据中心将为电网增加清洁能源，并保护纳税人。专家质疑是否需要电网升级。",
+      "title": "就在美联储加息之际，房地产正在闪烁警告信号",
+      "text": "根据周二的另外一份报告， 9月份住房数据进一步恶化。",
       "no": 4
     },
     {
       "tag": "要闻",
-      "title": "苹果宣布10月28日的产品发布会。分析师预计触摸",
-      "text": "苹果公司发送了下周活动的邀请，称之为“Pro and tell”。",
+      "title": "特朗普在最近的贸易挑战中对加拿大提起超过50%的",
+      "text": "一项新的诉讼利用1930年《关税法》第338条对唐纳德·特朗普总统对一系列加拿大商品征收的关税提出质疑。",
       "no": 5
     },
     {
       "tag": "展望",
-      "title": "中邮证券",
-      "text": "中邮证券：海外宏观周报：中选或加剧分化，关注非科技机会",
+      "title": "CNBC · 头条",
+      "text": "CNBC · 头条：经过多年的延误，波音赢得了美国联邦航空局对737 Max 10的批准，因为Duffy表示认证过程应该更快",
       "no": 6
     }
   ],
-  "trade_date": "2026-10-19",
+  "trade_date": "2026-10-20",
   "indices": {
     "道琼斯": {
-      "close": 51966.03,
-      "prev": 52002.41,
-      "open": 51978.58,
-      "time": "2026-10-19 16:44:25",
-      "chg": -36.38,
-      "pct": -0.07,
-      "high": 52134.58,
-      "low": 51863.8,
-      "volume": 394068742.0,
-      "amount": 20488934239886.0,
+      "close": 52495.88,
+      "prev": 51966.03,
+      "open": 51959.21,
+      "time": "2026-10-20 16:46:03",
+      "chg": 529.85,
+      "pct": 1.02,
+      "high": 52689.81,
+      "low": 51910.92,
+      "volume": 368648006.0,
+      "amount": 19327578529141.0,
       "name": "道琼斯",
       "proxy": ""
     },
     "纳斯达克": {
-      "close": 26430.89,
-      "prev": 26140.03,
-      "open": 26395.29,
-      "time": "2026-10-19 17:15:59",
-      "chg": 290.86,
-      "pct": 1.11,
-      "high": 26613.15,
-      "low": 26344.67,
-      "volume": 6737330254.0,
-      "amount": 178073609235291.0,
+      "close": 26424.82,
+      "prev": 26430.89,
+      "open": 26332.92,
+      "time": "2026-10-20 17:15:59",
+      "chg": -6.07,
+      "pct": -0.02,
+      "high": 26601.72,
+      "low": 26179.74,
+      "volume": 6999145080.0,
+      "amount": 184951127195536.0,
       "name": "纳斯达克",
       "proxy": ""
     },
     "标普500": {
-      "close": 7690.73,
-      "prev": 7659.44,
-      "open": 7702.77,
-      "time": "2026-10-19 16:44:14",
-      "chg": 31.29,
-      "pct": 0.41,
-      "high": 7731.18,
-      "low": 7684.79,
-      "volume": 2634321389.0,
-      "amount": 20259854536024.0,
+      "close": 7712.57,
+      "prev": 7690.73,
+      "open": 7679.01,
+      "time": "2026-10-20 16:45:45",
+      "chg": 21.84,
+      "pct": 0.28,
+      "high": 7748.42,
+      "low": 7668.03,
+      "volume": 2721619490.0,
+      "amount": 20990680829989.0,
       "name": "标普500",
       "proxy": ""
     },
     "罗素2000": {
-      "close": 271.28,
-      "prev": 270.44,
-      "open": 271.82,
-      "time": "2026-10-19 16:00:01",
-      "chg": 0.84,
-      "pct": 0.31,
-      "high": 272.66,
-      "low": 270.71,
-      "volume": 19578591.0,
-      "amount": 5316610367.0,
+      "close": 275.78,
+      "prev": 271.28,
+      "open": 271.53,
+      "time": "2026-10-20 16:00:01",
+      "chg": 4.5,
+      "pct": 1.66,
+      "high": 276.9,
+      "low": 271.29,
+      "volume": 26433571.0,
+      "amount": 7270684037.0,
       "name": "罗素2000",
       "proxy": "IWM"
     },
     "费城半导体": {
-      "close": 548.46,
-      "prev": 539.79,
-      "open": 556.73,
-      "time": "2026-10-19 16:00:01",
-      "chg": 8.67,
-      "pct": 1.61,
-      "high": 558.56,
-      "low": 547.44,
-      "volume": 8178700.0,
-      "amount": 4519029624.0,
+      "close": 546.36,
+      "prev": 548.46,
+      "open": 541.85,
+      "time": "2026-10-20 16:00:01",
+      "chg": -2.1,
+      "pct": -0.38,
+      "high": 553.83,
+      "low": 536.23,
+      "volume": 7509896.0,
+      "amount": 4108504197.0,
       "name": "费城半导体",
       "proxy": "SMH"
     }
@@ -118,289 +118,315 @@
     {
       "name": "科技",
       "code": "XLK",
-      "pct": 1.36,
-      "close": 185.96,
-      "chg": 2.49
+      "pct": -0.28,
+      "close": 185.44,
+      "chg": -0.52
     },
     {
       "name": "通信服务",
       "code": "XLC",
-      "pct": -0.21,
-      "close": 110.09,
-      "chg": -0.23
+      "pct": 0.09,
+      "close": 110.19,
+      "chg": 0.1
     },
     {
       "name": "可选消费",
       "code": "XLY",
-      "pct": 1.78,
-      "close": 114.46,
-      "chg": 2.0
+      "pct": 0.91,
+      "close": 115.5,
+      "chg": 1.04
     },
     {
       "name": "必需消费",
       "code": "XLP",
-      "pct": -0.47,
-      "close": 87.21,
-      "chg": -0.41
+      "pct": 0.62,
+      "close": 87.75,
+      "chg": 0.54
     },
     {
       "name": "金融",
       "code": "XLF",
-      "pct": -0.83,
-      "close": 55.06,
-      "chg": -0.46
+      "pct": 1.2,
+      "close": 55.72,
+      "chg": 0.66
     },
     {
       "name": "医疗保健",
       "code": "XLV",
-      "pct": -0.6,
-      "close": 175.65,
-      "chg": -1.06
+      "pct": 2.37,
+      "close": 179.82,
+      "chg": 4.17
     },
     {
       "name": "工业",
       "code": "XLI",
-      "pct": -0.64,
-      "close": 166.68,
-      "chg": -1.08
+      "pct": 0.07,
+      "close": 166.8,
+      "chg": 0.12
     },
     {
       "name": "材料",
       "code": "XLB",
-      "pct": 0.06,
-      "close": 50.95,
-      "chg": 0.03
+      "pct": 0.55,
+      "close": 51.23,
+      "chg": 0.28
     },
     {
       "name": "能源",
       "code": "XLE",
-      "pct": -0.64,
-      "close": 67.8,
-      "chg": -0.44
+      "pct": 0.25,
+      "close": 67.97,
+      "chg": 0.17
     },
     {
       "name": "公用事业",
       "code": "XLU",
-      "pct": -2.01,
-      "close": 41.36,
-      "chg": -0.85
+      "pct": 1.26,
+      "close": 41.88,
+      "chg": 0.52
     },
     {
       "name": "房地产",
       "code": "XLRE",
-      "pct": -1.16,
-      "close": 41.67,
-      "chg": -0.49
+      "pct": 1.7,
+      "close": 42.38,
+      "chg": 0.71
     }
   ],
   "mag7": [
     {
       "name": "英伟达",
       "code": "NVDA",
-      "pct": 1.38,
-      "close": 217.09,
-      "chg": 2.96,
-      "amount": 21457021877.0
+      "pct": -0.29,
+      "close": 216.47,
+      "chg": -0.62,
+      "amount": 17222254449.0
     },
     {
       "name": "苹果",
       "code": "AAPL",
-      "pct": -0.15,
-      "close": 342.94,
-      "chg": -0.52,
-      "amount": 11863893739.0
+      "pct": -1.0,
+      "close": 339.5,
+      "chg": -3.44,
+      "amount": 12201830426.0
     },
     {
       "name": "微软",
       "code": "MSFT",
-      "pct": 0.84,
-      "close": 533.52,
-      "chg": 4.47,
-      "amount": 9596345481.0
+      "pct": -0.31,
+      "close": 531.87,
+      "chg": -1.65,
+      "amount": 7745067394.0
     },
     {
       "name": "谷歌",
       "code": "GOOGL",
-      "pct": 1.05,
-      "close": 344.18,
-      "chg": 3.59,
-      "amount": 6827096610.0
+      "pct": -1.13,
+      "close": 340.28,
+      "chg": -3.9,
+      "amount": 6246726551.0
     },
     {
       "name": "亚马逊",
       "code": "AMZN",
-      "pct": 4.98,
-      "close": 262.45,
-      "chg": 12.45,
-      "amount": 14681009127.0
+      "pct": 0.07,
+      "close": 262.63,
+      "chg": 0.18,
+      "amount": 9182887106.0
     },
     {
       "name": "Meta",
       "code": "META",
-      "pct": -0.55,
-      "close": 705.44,
-      "chg": -3.89,
-      "amount": 11423955856.0
+      "pct": -1.59,
+      "close": 694.25,
+      "chg": -11.19,
+      "amount": 11769662690.0
     },
     {
       "name": "特斯拉",
       "code": "TSLA",
-      "pct": 3.76,
-      "close": 368.06,
-      "chg": 13.34,
-      "amount": 14200634624.0
+      "pct": 1.54,
+      "close": 373.71,
+      "chg": 5.65,
+      "amount": 11983025350.0
     }
   ],
   "macro": {
     "标普500ETF": {
       "name": "标普500ETF",
-      "pct": 0.42,
-      "close": 766.48
+      "pct": 0.34,
+      "close": 769.05
     },
     "标普等权": {
       "name": "标普等权",
-      "pct": -0.32,
-      "close": 213.4
+      "pct": 1.15,
+      "close": 215.86
     },
     "20年美债": {
       "name": "20年美债",
-      "pct": -0.74,
-      "close": 79.46
+      "pct": 0.84,
+      "close": 80.13
     },
     "美元": {
       "name": "美元",
-      "pct": 0.28,
-      "close": 29.0
+      "pct": -0.34,
+      "close": 28.9
     },
     "黄金": {
       "name": "黄金",
-      "pct": -0.61,
-      "close": 379.69
+      "pct": -0.54,
+      "close": 377.65
     }
   },
   "amount": {
-    "total": 565.0,
-    "prev": 0,
-    "delta": null,
+    "total": 489.0,
+    "prev": 565.0,
+    "delta": -76.0,
     "unit": "亿美元",
     "proxy": "SPY+QQQ"
   },
   "news": [
     {
       "no": 1,
-      "time": "05:05",
-      "title": "谷歌表示，它可以以正确的方式建立数据中心。一些专家和居民对此持怀疑态度",
-      "title_en": "Google says it can build data centers the right way. Some experts and residents are skeptical",
-      "summary": "谷歌表示，其明尼苏达州的人工智能数据中心将为电网增加清洁能源，并保护纳税人。专家质疑是否需要电网升级。",
-      "url": "https://www.cnbc.com/2026/10/19/how-data-centers-are-reshaping-americas-aging-grid-pine-island-minnesota-google.html",
-      "media": "CNBC · 科技",
+      "time": "03:28",
+      "title": "就在美联储加息之际，房地产正在闪烁警告信号",
+      "title_en": "Housing is flashing warning signs just as the Fed weighs more interest rate hikes",
+      "summary": "根据周二的另外一份报告， 9月份住房数据进一步恶化。",
+      "url": "https://www.cnbc.com/2026/10/20/housing-mortgage-rates-real-estate-federal-reserve.html",
+      "media": "CNBC · 市场",
       "kind": "foreign"
     },
     {
       "no": 2,
-      "time": "03:46",
-      "title": "苹果宣布10月28日的产品发布会。分析师预计触摸屏笔记本电脑",
-      "title_en": "Apple announces product launch event for Oct. 28. Analysts expect touchscreen laptop",
-      "summary": "苹果公司发送了下周活动的邀请，称之为“Pro and tell”。",
-      "url": "https://www.cnbc.com/2026/10/19/apple-product-launch-event-oct-28-analysts-expect-touchscreen-laptop.html",
-      "media": "CNBC · 科技",
+      "time": "02:06",
+      "title": "特朗普在最近的贸易挑战中对加拿大提起超过50%的关税诉讼",
+      "title_en": "Trump sued over 50% tariffs on Canada in latest trade challenge",
+      "summary": "一项新的诉讼利用1930年《关税法》第338条对唐纳德·特朗普总统对一系列加拿大商品征收的关税提出质疑。",
+      "url": "https://www.cnbc.com/2026/10/20/trump-tariffs-canada-section-338-lawsuit.html",
+      "media": "CNBC · 头条",
       "kind": "foreign"
     },
     {
       "no": 3,
-      "time": "05:12",
-      "title": "股票投资者已准备好从AI溃败中继续前进。信贷投资者不是",
-      "title_en": "Stock investors are ready to move on from the AI rout. Credit investors are not",
-      "summary": "投资者仍然要求CoreWeave和甲骨文债券的高收益和更多保险。",
-      "url": "https://www.cnbc.com/2026/10/19/coreweave-oracle-ai-credit-stress.html",
+      "time": "06:29",
+      "title": "Netflix公布第三季度盈利好于预期，但股价因广告和收入指引而下跌",
+      "title_en": "Netflix posts third-quarter earnings beat, but shares fall on advertising and revenue guidance",
+      "summary": "华尔街和投资者将寻求Netflix在最近的组织变革后提供有关公司战略的更多详细信息",
+      "url": "https://www.cnbc.com/2026/10/20/netflix-nflx-earnings-q3-2026.html",
       "media": "CNBC · 头条",
       "kind": "foreign"
     }
   ],
   "calendar": {
-    "date": "2026-10-20",
+    "date": "2026-10-21",
     "earnings": [
       {
-        "symbol": "GE",
-        "name": "GE Aerospace",
-        "name_cn": "通用电气",
-        "sector": "航空发动机",
-        "when": "盘前",
-        "eps": "$2.02"
-      },
-      {
-        "symbol": "NFLX",
-        "name": "Netflix, Inc.",
-        "name_cn": "奈飞",
-        "sector": "流媒体",
+        "symbol": "META",
+        "name": "Meta Platforms, Inc.",
+        "name_cn": "Meta",
+        "sector": "社交广告",
         "when": "盘后",
-        "eps": "$0.82"
+        "eps": "$6.54"
       },
       {
-        "symbol": "RTX",
-        "name": "RTX Corporation",
-        "name_cn": "雷神技术",
-        "sector": "军工",
-        "when": "盘前",
-        "eps": "$1.78"
-      },
-      {
-        "symbol": "ISRG",
-        "name": "Intuitive Surgical, Inc.",
-        "name_cn": "直觉外科",
-        "sector": "手术机器人",
+        "symbol": "TSLA",
+        "name": "Tesla, Inc.",
+        "name_cn": "特斯拉",
+        "sector": "电动车",
         "when": "盘后",
-        "eps": "$2.13"
+        "eps": "$0.22"
+      },
+      {
+        "symbol": "LRCX",
+        "name": "Lam Research Corporation",
+        "name_cn": "泛林集团",
+        "sector": "半导体设备",
+        "when": "盘后",
+        "eps": "$2.17"
+      },
+      {
+        "symbol": "PM",
+        "name": "Philip Morris International Inc",
+        "name_cn": "菲利普莫里斯",
+        "sector": "烟草",
+        "when": "盘前",
+        "eps": "$2.30"
       }
     ],
     "econ": [
       {
-        "time": "10:00",
-        "name": "NAHB Housing Market Index",
-        "name_cn": "全美住宅建筑商信心指数",
-        "note": "50 是荣枯线，低于 50 说明房市收缩",
-        "consensus": "31",
-        "previous": "32",
-        "trend": "预期回落"
+        "time": "08:30",
+        "name": "Housing Starts",
+        "name_cn": "新屋开工（年化户数）",
+        "note": "每月新开工的住宅数量，是房市的先行读数",
+        "consensus": "1.300M",
+        "previous": "1.288M",
+        "trend": "预期回升"
+      },
+      {
+        "time": "08:30",
+        "name": "Housing Starts",
+        "name_cn": "新屋开工（月率环比）",
+        "note": "同一指标较上个月的变化幅度",
+        "consensus": "1.9%",
+        "previous": "-5.9%",
+        "trend": "预期回升"
+      },
+      {
+        "time": "10:30",
+        "name": "Atlanta Fed GDPNow",
+        "name_cn": "亚特兰大联储 GDPNow 模型",
+        "note": "用已公布数据实时推算的季度 GDP 增速，不是官方终值，会随新数据反复修正",
+        "consensus": "3.6%",
+        "previous": "3.6%",
+        "trend": "预期与上期持平"
       }
     ]
   },
   "outlook": [
     {
-      "org": "中邮证券",
-      "title": "海外宏观周报：中选或加剧分化，关注非科技机会",
-      "date": "2026-10-20",
-      "url": "https://data.eastmoney.com/report/info/AP202610201830721617.html",
-      "digest": "美股企稳需要看到长端利率进一步回落，以及AI相关企业的信用压力不再恶化。"
+      "org": "CNBC · 头条",
+      "title": "经过多年的延误，波音赢得了美国联邦航空局对737 Max 10的批准，因为Duffy表示认证过程应该更快",
+      "title_en": "Boeing wins FAA approval for 737 Max 10 after years of delays as Duffy says certification process should be faster",
+      "digest": "737 MAX 10是家族中最大的型号，原定于2020年开始飞行，但审查和其他安全问题的增加推迟了其认证。",
+      "date": "10-21 06:01",
+      "url": "https://www.cnbc.com/2026/10/20/boeing-737-max-10-certification.html",
+      "kind": "foreign"
     },
     {
-      "org": "粤开证券",
-      "title": "【粤开宏观】全球K型分化的三大驱动：AI、利率与债务",
-      "date": "2026-10-20",
-      "url": "https://data.eastmoney.com/report/info/AP202610201830719684.html",
-      "digest": "“K型经济”概念在新冠疫情后兴起，但并未随疫情结束而消失，反而伴随人工智能发展带动的经济结构分化而再度被反复讨论。"
+      "org": "CNBC · 头条",
+      "title": "由于抗议活动扰乱了国家， 2027年法国总统大选中马琳·勒庞的预测市场几率上升",
+      "title_en": "Prediction-market odds rise for Marine Le Pen in France 2027 presidential race as protests roil nation",
+      "digest": "Kalshi的投机者认为，在该国日益动荡的情况下，马琳·勒庞(Marine Le Pen)赢得2027年法国总统大选的可能性更大。",
+      "date": "10-21 04:34",
+      "url": "https://www.cnbc.com/2026/10/20/marine-le-pen-france-2027-election-odds-kalshi.html",
+      "kind": "foreign"
     }
   ],
   "attribution": [
     {
       "k": "结构",
-      "t": "纳指显著强于道指，成长股承担了当日主要涨幅，资金愿意为远期现金流付溢价——这是风险偏好抬升的进攻型结构；费城半导体大涨，是当日风险偏好的最强读数。"
+      "t": "道指强于纳指，资金从长久期成长股撤向现金流确定的权重与防御板块，属于典型的风险规避式轮动；小盘罗素2000 跑赢标普，说明行情不只在权重股里，风险偏好向低流动性资产扩散。"
     },
     {
       "k": "广度",
-      "t": "标普市值加权明显强于等权指数——指数是被少数超大权重股抬上去的，多数成分股并没有跟上，这种上涨的内部结构偏脆弱；MAG7 平均涨幅高出标普 1.2 个百分点，七巨头是当日指数的直接发动机。"
+      "t": "等权指数强于市值加权，说明上涨由多数个股共同推动，广度健康，不是靠几只巨头撑门面。"
+    },
+    {
+      "k": "量能",
+      "t": "缩量上涨，参与度不足，涨幅的持续性需要后续放量确认（成交额以 SPY+QQQ 为活跃度代理）。"
     },
     {
       "k": "主线",
-      "t": "买盘集中在 可选消费、科技、材料；卖盘主要来自 金融、房地产、公用事业。权重股里 亚马逊 最强、Meta 最弱。"
+      "t": "买盘集中在 医疗保健、房地产、公用事业；卖盘主要来自 科技。权重股里 特斯拉 最强、Meta 最弱。"
     },
     {
       "k": "催化",
-      "t": "领涨方向没有找到直接对应的事件驱动，更像资金自发的仓位再平衡；当日信息量最大的是「谷歌表示，它可以以正确的方式建立数据中心。一些专家和居民对此持怀疑态度」，但它解释不了盘面的主要涨幅。"
+      "t": "领涨方向没有找到直接对应的事件驱动，更像资金自发的仓位再平衡；当日信息量最大的是「就在美联储加息之际，房地产正在闪烁警告信号」，但它解释不了盘面的主要涨幅。"
     },
     {
       "k": "宏观",
-      "t": "长端美债走弱（利率上行）却没能压住股指，说明当日定价矛盾不在利率端，这种背离本身值得警惕。"
+      "t": "长端美债走强、利率回落，对估值是顺风；美元走弱，risk-on 的资金环境。"
     }
   ]
 }

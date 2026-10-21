@@ -9,8 +9,9 @@
   2. 板块强弱（11 个 GICS 行业 ETF 涨跌条形可视化）
   3. 权重股（MAG7）—— 美股指数方向的直接决定者
   4. 盘面归因（结构 / 广度 / 量能 / 主线 / 催化 / 宏观）
-  5. 今日要闻（最多 3 条）
-  6. 明日展望（机构策略研报观点）
+  5. 今日要闻（最多 3 条，外媒一手信源）
+  6. 明日事件（财报 + 经济数据，确定会发生的事实）
+  7. 明日展望（机构策略研报观点）
 
 配色沿用「红涨绿跌」，与 A 股简报保持一致，避免两套简报间切换的认知成本。
 """
@@ -18,6 +19,7 @@
 import html
 import json
 import os
+import re
 from datetime import datetime
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -38,6 +40,23 @@ def cls(v):
 
 def pct_text(v, sign=True):
     return (f"{v:+.2f}%" if sign else f"{v:.2f}%")
+
+
+def econ_value(v):
+    """把 1.300M / 215K 这类英文缩写转成中文可读的数量级，只换写法不改数值。"""
+    s = str(v or "").strip()
+    m = re.match(r"^(-?\d+(?:\.\d+)?)\s*([MKB])$", s, re.I)
+    if not m:
+        return s
+    n, u = float(m.group(1)), m.group(2).upper()
+    if u == "M":       # 1.300M = 130 万
+        val, unit = n * 100, "万"
+    elif u == "K":     # 215K = 21.5 万
+        val, unit = n / 10, "万"
+    else:              # 1.2B = 12 亿
+        val, unit = n * 10, "亿"
+    txt = f"{val:.1f}".rstrip("0").rstrip(".")
+    return f"{txt} {unit}"
 
 
 # ------------------------------------------------------------ 1. 指数条
@@ -262,7 +281,11 @@ def calendar_block(b):
         return ""
 
     def earn_item(e):
+        sym = e.get("symbol", "")
         cn = e.get("name_cn") or ""
+        # 中文名与代码相同（META/Meta）时不重复显示
+        if cn.strip().lower() == sym.strip().lower():
+            cn = ""
         sec = e.get("sector") or ""
         tags = ""
         if cn:
@@ -310,9 +333,9 @@ def calendar_block(b):
                  if e.get("time") else "")
             bits = []
             if e.get("consensus"):
-                bits.append(f'预期 <b>{esc(e["consensus"])}</b>')
+                bits.append(f'预期 <b>{esc(econ_value(e["consensus"]))}</b>')
             if e.get("previous"):
-                bits.append(f'前值 {esc(e["previous"])}')
+                bits.append(f'前值 {esc(econ_value(e["previous"]))}')
             if e.get("trend"):
                 bits.append(esc(e["trend"]))
             tip = (f'<div class="cal-tip">{esc(e["note"])}</div>'

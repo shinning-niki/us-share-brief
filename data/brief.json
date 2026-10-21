@@ -1,7 +1,7 @@
 {
   "date": "2026-10-20",
   "weekday": "周二",
-  "generated_at": "2026-10-20 20:14",
+  "generated_at": "2026-10-20 20:23",
   "is_trading_day": true,
   "items": [
     {
@@ -323,24 +323,32 @@
       {
         "symbol": "GE",
         "name": "GE Aerospace",
+        "name_cn": "通用电气",
+        "sector": "航空发动机",
         "when": "盘前",
         "eps": "$2.02"
       },
       {
         "symbol": "NFLX",
         "name": "Netflix, Inc.",
+        "name_cn": "奈飞",
+        "sector": "流媒体",
         "when": "盘后",
         "eps": "$0.82"
       },
       {
         "symbol": "RTX",
         "name": "RTX Corporation",
+        "name_cn": "雷神技术",
+        "sector": "军工",
         "when": "盘前",
         "eps": "$1.78"
       },
       {
         "symbol": "ISRG",
         "name": "Intuitive Surgical, Inc.",
+        "name_cn": "直觉外科",
+        "sector": "手术机器人",
         "when": "盘后",
         "eps": "$2.13"
       }
@@ -349,8 +357,11 @@
       {
         "time": "10:00",
         "name": "NAHB Housing Market Index",
+        "name_cn": "全美住宅建筑商信心指数",
+        "note": "50 是荣枯线，低于 50 说明房市收缩",
         "consensus": "31",
-        "previous": "32"
+        "previous": "32",
+        "trend": "预期回落"
       }
     ]
   },

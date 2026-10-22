@@ -152,8 +152,16 @@ jobs:
       - name: 醒来复查闸门
         id: gate2
         if: steps.gate.outputs.skip != 'true' && steps.wait.outputs.reason != 'too-early'
+        env:
+          FORCE_INPUT: ${{ github.event.inputs.force }}
         run: |
-          OUT=$(python scripts/check_done.py)
+          # force 必须同时作用于两道闸门。只作用于第一道时，睡眠醒来会被
+          # 第二道以「今日已完成」拦下，手动强制重跑会永久失效。
+          ARG=""
+          if [ "$FORCE_INPUT" = "true" ]; then
+            ARG="--force"
+          fi
+          OUT=$(python scripts/check_done.py $ARG)
           echo "$OUT"
           SKIP=$(echo "$OUT" | grep '^skip=' | cut -d= -f2)
           echo "skip2=$SKIP" >> "$GITHUB_OUTPUT"

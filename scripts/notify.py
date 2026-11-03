@@ -88,17 +88,64 @@ def send_feishu(url, b, page):
 
 
 # --------------------------------------------------------------- Bark
+# 简报各维度的固定名。用于在纯文本里区分「维度」和「要闻标题」。
+DIMENSIONS = {"收盘", "结构", "广度", "量能", "主线", "催化", "宏观", "指数", "板块"}
+
+
+def bark_body(b):
+    """把完整简报拼成纯文本，供推送正文使用。
+
+    要闻条目的 title 是中文标题、text 是补充说明，两者拼起来才完整；
+    标题若被上游截断（不以标点结尾），补一个省略号以免读成半句话。
+    """
+    out = []
+    for it in (b.get("items") or []):
+        t = (it.get("text") or "").strip()
+        if not t:
+            continue
+        title = (it.get("title") or "").strip()
+        if title in DIMENSIONS:
+            out.append(f"【{title}】{t}")
+        elif title and not t.startswith(title[:8]):
+            cut = "" if title.endswith(("。", "！", "？", "」", "）", "”")) else "…"
+            out.append(f"{title}{cut}{t}")
+        else:
+            out.append(t)
+    return "\n\n".join(out)
+
+
 def send_bark(base, b, page):
-    title = f"美股收盘 {b.get('trade_date', '')}"
-    body = "；".join((it["text"] or "").rstrip("。") for it in (b.get("items") or [])[:3])
-    if len(body) > 180:
-        body = body[:180] + "…"
-    u = (base.rstrip("/") + "/" + urllib.parse.quote(title) + "/"
-         + urllib.parse.quote(body)
-         + "?url=" + urllib.parse.quote(page, safe="")
-         + "&group=" + urllib.parse.quote("美股简报")
-         + "&isArchive=1")
-    return get_url(u)
+    """POST 推送，简报全文随消息下发。
+
+    为什么不再用 GET + url 参数带跳转链接：
+
+      GitHub Pages 的 185.199.108-111.153 在国内时断时续（DNS 能解析，
+      链路时通时不通）。而 Bark 消息一旦带 url，iOS 点击通知是直接跳
+      浏览器——等于把「看简报」这件事绑死在一条不可靠的路上，链接不通
+      时用户既看不到内容也退不回来。
+
+      改为正文随推送下发后，点通知是在 Bark 内展开，内容在收到推送的
+      那一刻就已经落到设备上，展开不再发起任何网络请求。网页版链接
+      降级为正文末尾的一行纯文本，能打开时当补充，打不开也不影响阅读。
+    """
+    base = base.rstrip("/")
+    text = bark_body(b)
+    if page:
+        text = f"{text}\n\n— 网页版：{page}"
+    payload = {
+        "title": f"美股收盘 {b.get('trade_date', '')}",
+        "body": text,
+        "group": "美股简报",
+        "isArchive": 1,
+    }
+    # BARK_URL 形如 https://api.day.app/<device_key>，POST 端点要取 origin + /push，
+    # device_key 放进 JSON。自建 Bark 同样适用。
+    origin, _, key = base.rpartition("/")
+    if not origin.startswith("http"):
+        origin, key = base, ""
+    if key:
+        payload["device_key"] = key
+    return post_json(origin + "/push", payload)
 
 
 # --------------------------------------------------------------- Server酱

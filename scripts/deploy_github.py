@@ -42,6 +42,12 @@ API = "https://api.github.com"
 SKIP_DIRS = {".git", "__pycache__", "dist"}
 SKIP_FILES = {".DS_Store"}
 
+# data/ 下是运行产物。本地副本往往比线上旧（云端每天在写），
+# 部署时如果一并上传，会把线上的 history.json 回滚——那是 SPY+QQQ 的
+# 成交额历史，回滚一天就会让「放量/缩量」的判断跟着错。
+# 这些文件只在首次建仓时有用（缺了运行时会自动生成），所以一律不推。
+SKIP_DATA = {"brief.json", "history.json", "summary.md", "sent.json"}
+
 
 def call(method, path, payload=None, ok=(200, 201, 204)):
     url = path if path.startswith("http") else API + path
@@ -78,6 +84,8 @@ def collect_files():
                 continue
             full = os.path.join(base, fn)
             rel = os.path.relpath(full, ROOT).replace(os.sep, "/")
+            if rel.startswith("data/") and fn in SKIP_DATA:
+                continue
             with open(full, "rb") as f:
                 out[rel] = f.read()
     return out

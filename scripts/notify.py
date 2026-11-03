@@ -95,22 +95,28 @@ DIMENSIONS = {"收盘", "结构", "广度", "量能", "主线", "催化", "宏�
 def bark_body(b):
     """把完整简报拼成纯文本，供推送正文使用。
 
-    要闻条目的 title 是中文标题、text 是补充说明，两者拼起来才完整；
-    标题若被上游截断（不以标点结尾），补一个省略号以免读成半句话。
+    条目按 tag 分流，不按 title 猜：
+
+      · 指数 / 结构 / 广度… 是「维度」，text 是结论，标题就是维度名，加【】突出
+      · 要闻的 title 是原文标题的译文、且在 fetch_brief 里被硬截到 24 字，
+        与 text（完整译文）说的是同一件事。两者拼在一起会出现
+        「甲骨文申请出售200亿美元…甲骨文周一提交了发行新股」这种重复，
+        所以只取 text
+      · 展望的 text 自带媒体来源（CNBC · 科技：…），直接输出
     """
     out = []
     for it in (b.get("items") or []):
         t = (it.get("text") or "").strip()
         if not t:
             continue
+        tag = (it.get("tag") or "").strip()
         title = (it.get("title") or "").strip()
-        if title in DIMENSIONS:
-            out.append(f"【{title}】{t}")
-        elif title and not t.startswith(title[:8]):
-            cut = "" if title.endswith(("。", "！", "？", "」", "）", "”")) else "…"
-            out.append(f"{title}{cut}{t}")
+        if tag == "指数" or title in DIMENSIONS:
+            out.append(f"【{title or tag}】{t}")
+        elif tag == "展望":
+            out.append(f"【展望】{t}")
         else:
-            out.append(t)
+            out.append(f"· {t}")
     return "\n\n".join(out)
 
 

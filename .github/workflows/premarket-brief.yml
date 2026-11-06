@@ -1,0 +1,196 @@
+name: 美股盘前简报
+
+# ===========================================================================
+# 每天晚上 22:00（北京）发一轮盘前交易涨跌
+# ===========================================================================
+# 为什么独立成一个 workflow，而不是塞进 daily-brief.yml
+# ---------------------------------------------------------
+# daily-brief.yml 的锚点会 sleep 到美东 17:30，最长占锁 5 小时。GitHub 的
+# concurrency 是 workflow 级的，如果盘前简报和收盘简报放在同一个文件里，
+# 盘前这一轮会被正在睡觉的收盘 job 阻塞到天亮——等于永远发不出去。
+# 所以必须拆文件，用独立的 concurrency group 并行。
+#
+# 时间锚点：美东 09:00（开盘前 30 分钟）
+# ---------------------------------------------------------
+# 用户要的是「每天晚上 10 点」盘前。冬令时下美东 09:00 正好是北京 22:00，
+# 夏令时是北京 21:00。
+#
+# 这里选择锚定「美东 09:00」而不是硬写 UTC 14:00：
+# 盘中简报的价值在于「开盘前」这三个字，而开盘时刻跟着美东走。写死 UTC
+# 会让夏令时变成「开盘后 30 分钟」，语义就错了。锚定美东后，全年都是
+# 「开盘前 30 分钟送达」，北京的钟点随季节在 21:00/22:00 之间移动。
+#
+# 为什么 cron 要提前 2-3 小时，而不是设在 13:50
+# ---------------------------------------------------------
+# GitHub Actions 原生 cron 是 best-effort，实测延迟 0.5 ~ 5.5 小时，还会
+# 静默丢触发。盘前简报比收盘简报更怕延迟——晚两小时就不是盘前了。
+#
+# 所以反过来做：cron 提前排队，job 一起来先睡到美东 09:00 再抓数。
+#
+#   冬令时（目标 UTC 14:00）        夏令时（目标 UTC 13:00）
+#   UTC 11:00 = ET 06:00 睡 3h      UTC 11:00 = ET 07:00 睡 2h
+#   UTC 13:00 = ET 08:00 睡 1h      UTC 13:00 = ET 09:00 已到点
+#   UTC 14:00 = ET 09:00 到点       UTC 14:00 = ET 10:00 已过窗口
+#
+# 只要 job 在美东 06:00 ~ 09:26 之间被调度起来，送达时间都恒定在盘前。
+# 超过 09:26 就放弃（wait_for_session.py 的 too-late），宁可今天不发，
+# 也不把盘中数据当盘前发出去。
+#
+# 仓库是 public，Actions 分钟数免费不限量，睡 3 小时零成本。
+# ===========================================================================
+
+on:
+  schedule:
+    # 冬令时 11:00~13:00 UTC = 美东 06:00~08:00，睡到 09:00
+    # 夏令时 11:00~13:00 UTC = 美东 07:00~09:00，同样落在窗口内
+    - cron: '0 11 * * 1-5'
+    - cron: '30 11 * * 1-5'
+    - cron: '0 12 * * 1-5'
+    - cron: '30 12 * * 1-5'
+    - cron: '0 13 * * 1-5'
+    - cron: '30 13 * * 1-5'
+    # 到点后的容错点：冬令时 ET 08:30/08:50/09:10/09:30
+    - cron: '0 14 * * 1-5'
+    - cron: '20 14 * * 1-5'
+    - cron: '40 14 * * 1-5'
+  workflow_dispatch:
+    inputs:
+      force:
+        description: '强制重跑（忽略当日已完成判断）'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  # 与收盘简报（us-share-brief）、盘中简报（us-midday-brief）互不干扰
+  group: us-premarket-brief
+  cancel-in-progress: false
+
+jobs:
+  premarket:
+    runs-on: ubuntu-latest
+    # 最长睡 3 小时 + 抓数 2 分钟，留足余量
+    timeout-minutes: 240
+    env:
+      TZ: Asia/Shanghai
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: 设置 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # 睡眠之前先查一次：今天已经发过就立刻退出，不白睡 3 小时
+      - name: 去重闸门（今日盘前是否已发）
+        id: gate
+        run: |
+          ARG=""
+          if [ "${{ github.event.inputs.force }}" = "true" ]; then ARG="--force"; fi
+          OUT=$(python scripts/check_done.py --stage pre $ARG)
+          echo "$OUT"
+          SKIP=$(echo "$OUT" | grep '^skip=' | cut -d= -f2)
+          echo "skip=$SKIP" >> "$GITHUB_OUTPUT"
+          if [ "$SKIP" = "true" ]; then
+            echo "::notice title=已推送::今日盘前简报已完成，本次触发跳过"
+          fi
+
+      # 核心：cron 提前排队，睡到美东 09:00 再干活，队列延迟被睡眠吸收
+      - name: 等待到盘前时刻（吸收 cron 延迟）
+        id: wait
+        if: steps.gate.outputs.skip != 'true'
+        run: python scripts/wait_for_session.py --stage pre
+
+      # 睡眠期间可能已有别的触发点跑完并推送，醒来必须复查
+      - name: 醒来复查闸门
+        id: gate2
+        if: steps.gate.outputs.skip != 'true' && steps.wait.outputs.reason != 'too-late'
+        run: |
+          ARG=""
+          if [ "${{ github.event.inputs.force }}" = "true" ]; then ARG="--force"; fi
+          OUT=$(python scripts/check_done.py --stage pre $ARG)
+          echo "$OUT"
+          SKIP=$(echo "$OUT" | grep '^skip=' | cut -d= -f2)
+          echo "skip2=$SKIP" >> "$GITHUB_OUTPUT"
+          if [ "$SKIP" = "true" ]; then
+            echo "::notice title=已被其他触发点完成::本次跳过，不重复推送"
+          fi
+
+      - name: 同步最新代码
+        if: steps.gate.outputs.skip != 'true' && steps.wait.outputs.reason != 'too-late' && steps.gate2.outputs.skip2 != 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git pull --rebase --autostash origin main || echo "::warning::代码同步失败，继续执行"
+
+      # 行情接口全挂时脚本返回非零，run 变红触发告警，下一个触发点重试。
+      # 休市时脚本自己判 skipped=true 并以 0 退出——那是正常情况。
+      - name: 抓取盘前行情
+        id: fetch
+        if: steps.gate.outputs.skip != 'true' && steps.wait.outputs.reason != 'too-late' && steps.gate2.outputs.skip2 != 'true'
+        run: |
+          python scripts/fetch_intraday.py --stage pre
+          SKIPPED=$(python -c "import json;print(json.load(open('data/intraday.json')).get('skipped', False))")
+          echo "skipped=$SKIPPED" >> $GITHUB_OUTPUT
+          if [ "$SKIPPED" = "True" ]; then
+            echo "::notice title=休市::今日非交易日或数据源滞后，跳过推送"
+          fi
+
+      - name: 推送到手机
+        id: notify
+        if: steps.fetch.outputs.skipped == 'False'
+        env:
+          FEISHU_WEBHOOK: ${{ secrets.FEISHU_WEBHOOK }}
+          BARK_URL: ${{ secrets.BARK_URL }}
+        run: python scripts/notify_intraday.py
+
+      # 只有推送成功才写标记。标记落库后，后续触发点才会跳过；
+      # 若推送失败，标记不写，下一个触发点自动重试。
+      # 同时把盘前快照一起提交——盘中简报要读它做「盘前 → 盘中」对比。
+      - name: 标记并保存盘前快照
+        id: mark
+        if: steps.fetch.outputs.skipped == 'False'
+        run: |
+          python scripts/mark_done.py --stage pre
+          git add data/sent.json data/sessions data/intraday.json
+          git diff --quiet --cached || git commit -m "chore: 盘前简报已推送 $(date +%Y-%m-%d) [skip ci]"
+          git pull --rebase --autostash origin main || echo "::warning::同步失败"
+          git push || echo "::warning::标记推送失败，下个触发点可能重复推送"
+
+      - name: 失败告警
+        if: failure()
+        env:
+          BARK_URL: ${{ secrets.BARK_URL }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          STEP="未知环节"
+          if [ "${{ steps.fetch.outcome }}" = "failure" ]; then STEP="抓取盘前行情"; fi
+          if [ "${{ steps.notify.outcome }}" = "failure" ]; then STEP="推送到手机"; fi
+          python scripts/alert.py "美股盘前简报失败" \
+            "失败环节：$STEP｜触发：${{ github.event_name }}｜下一个触发点会自动重试"
+
+      - name: 运行摘要
+        if: always()
+        run: |
+          echo "## 美股盘前简报运行记录" >> $GITHUB_STEP_SUMMARY
+          echo "| 项目 | 结果 |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| 触发方式 | ${{ github.event_name }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 第一道闸门 | skip=${{ steps.gate.outputs.skip }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 等待 | reason=${{ steps.wait.outputs.reason }}｜睡了 ${{ steps.wait.outputs.waited }} 秒 |" >> $GITHUB_STEP_SUMMARY
+          echo "| 复查闸门 | skip=${{ steps.gate2.outputs.skip2 }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 是否休市跳过 | ${{ steps.fetch.outputs.skipped }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 手机推送 | ${{ steps.notify.outcome }} |" >> $GITHUB_STEP_SUMMARY
+          if [ -f data/intraday.json ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            python -c "import json;print(json.load(open('data/intraday.json')).get('text',''))" >> $GITHUB_STEP_SUMMARY 2>/dev/null || true
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          fi

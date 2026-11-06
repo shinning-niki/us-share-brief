@@ -75,6 +75,25 @@ on:
     # --- 兜底：早上全挂时补发，保证绝不静默 ---
     - cron: '0 4 * * 2-6'
     - cron: '0 10 * * 2-6'
+    # --- 盘前 / 盘中的调度源 ---
+    # 这两轮本来在各自的工作流文件里，但新建文件的 schedule 在本仓库
+    # 实测不会被调度（2026-11-06 加了 9 个点，4 个时刻零触发，同时段
+    # 这个文件却准点跑了）。所以调度统一收在这里，由 scheduler job 转发。
+    # 11:00~14:40 UTC = 美东 06:00~09:40，覆盖盘前 09:00 前后
+    - cron: '0 11 * * 1-5'
+    - cron: '30 11 * * 1-5'
+    - cron: '0 12 * * 1-5'
+    - cron: '30 12 * * 1-5'
+    - cron: '0 13 * * 1-5'
+    - cron: '30 13 * * 1-5'
+    - cron: '0 14 * * 1-5'
+    - cron: '20 14 * * 1-5'
+    - cron: '40 14 * * 1-5'
+    # 15:00~16:30 UTC = 美东 10:00~11:30，覆盖盘中 10:30 前后
+    - cron: '0 15 * * 1-5'
+    - cron: '30 15 * * 1-5'
+    - cron: '0 16 * * 1-5'
+    - cron: '30 16 * * 1-5'
   workflow_dispatch:
     inputs:
       force:
@@ -86,16 +105,72 @@ permissions:
   contents: write
   pages: write
   id-token: write
+  # 派发盘前 / 盘中两个工作流需要这个权限。GITHUB_TOKEN 默认没有，
+  # 缺了会在转发那一步静默失败（403），三个简报只剩收盘那一条。
+  actions: write
 
-concurrency:
-  # 串行执行，避免两个 run 同时写 sent.json 打架。
-  # 锚点在睡眠期间占锁，后面的触发点排队；锚点结束后第一个 pending 立即执行
-  # 并通过闸门跳过——不会重复推送，也不会漏掉重试机会。
-  group: us-share-brief
-  cancel-in-progress: false
+# concurrency 从 workflow 级下移到 job 级：这个文件现在装了两个 job，
+# 如果共用一把锁，收盘 job 睡 5 小时的期间会把 scheduler 一起堵住，
+# 盘前/盘中就全废了。锁只用来防止「同一件事被并发写 sent.json」。
 
 jobs:
+  # ---------------------------------------------------------------- 调度转发
+  # 为什么需要这个 job：新建工作流文件里的 schedule 在本仓库不会被调度
+  # （见下方 crons 注释）。这里借用本文件已验证可用的调度，按 UTC 时段
+  # 把 pre / mid 两个事件派发给专项工作流，让它们各跑各的、互不阻塞。
+  scheduler:
+    name: 派发盘前 / 盘中简报
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.event_name == 'schedule'
+    concurrency:
+      group: us-brief-scheduler
+      cancel-in-progress: true
+    steps:
+      - name: 按 UTC 时段转发触发
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          H=$(date -u +%H); H=$((10#$H))
+          echo "当前 UTC 小时：$H"
+
+          fire() {
+            ev="$1"
+            for i in 1 2 3; do
+              code=$(curl -s -o /tmp/d.json -w "%{http_code}" -X POST \
+                -H "Authorization: Bearer $GH_TOKEN" \
+                -H "Accept: application/vnd.github+json" \
+                "https://api.github.com/repos/$REPO/dispatches" \
+                -d "{\"event_type\":\"$ev\"}")
+              echo "  dispatch $ev 第 $i 次 -> HTTP $code"
+              if [ "$code" = "204" ]; then return 0; fi
+              sleep 5
+            done
+            echo "::error::派发 $ev 失败：$(cat /tmp/d.json 2>/dev/null)"
+            return 1
+          }
+
+          RC=0
+          # 11~14 点派发盘前；13~16 点派发盘中。
+          # 时段重叠是故意的：早一点起跑的 job 会在等待脚本里睡到目标时刻，
+          # 队列延迟反而被吸收掉。
+          if [ "$H" -ge 11 ] && [ "$H" -le 14 ]; then fire pre  || RC=1; fi
+          if [ "$H" -ge 13 ] && [ "$H" -le 16 ]; then fire mid  || RC=1; fi
+          exit $RC
+
   brief:
+    # 只认收盘自己的那 13 个触发点。文件里现在多了 14 个盘前/盘中的 cron，
+    # 不加这道门的话收盘 job 会被它们全部唤醒，白跑十几次。
+    if: >
+      github.event_name != 'schedule' ||
+      contains(fromJSON('["15 17 * * 1-5","15 18 * * 1-5","10 20 * * 1-5","50 20 * * 1-5","30 21 * * 1-5","10 22 * * 1-5","50 22 * * 1-5","30 23 * * 1-5","15 0 * * 2-6","50 0 * * 2-6","25 1 * * 2-6","0 4 * * 2-6","0 10 * * 2-6"]'), github.event.schedule)
+    concurrency:
+      # 串行执行，避免两个 run 同时写 sent.json 打架。
+      # 锚点在睡眠期间占锁，后面的触发点排队；锚点结束后第一个 pending 立即执行
+      # 并通过闸门跳过——不会重复推送，也不会漏掉重试机会。
+      group: us-share-brief
+      cancel-in-progress: false
     runs-on: ubuntu-latest
     # 锚点最长睡 5h15m（冬令时），加上抓数与部署约 5 分钟。
     # GitHub 单 job 硬上限 6 小时，这里留出余量。

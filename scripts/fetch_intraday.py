@@ -56,7 +56,9 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
 
-from fetch_brief import fetch_econ_events, fetch_earnings, fnum  # noqa: E402
+from fetch_brief import (  # noqa: E402
+    fetch_econ_events, fetch_earnings, fetch_foreign_news, fnum,
+    pick_foreign_news, translate)
 
 ET = ZoneInfo("America/New_York")
 CN = timezone(timedelta(hours=8))
@@ -300,9 +302,10 @@ def describe(idx, sectors, mag7, macro):
 
 
 def format_pct(v):
-    # -0.04 会显示成 "-0.0%"，看着像笔误。四舍五入到 0 的一律写 0.0%
+    # -0.04 会显示成 "-0.0%"，看着像笔误。四舍五入到 0 的改用「持平」，
+    # 中文里「持平」比「0.0%」更像话，尤其宏观那行经常出现。
     if abs(v) < 0.05:
-        return "0.0%"
+        return "持平"
     return f"{v:+.1f}%"
 
 
@@ -413,6 +416,64 @@ def pick_econ(rows, et_now, limit=3):
     return out
 
 
+NEWS_LIMIT = 3         # 最多几条
+NEWS_MAXLEN = 46       # 单条标题汉字上限，超了截断加省略号
+
+# 二次过滤：pick_foreign_news 只保证「落在市场语汇里」，挡不住两类东西——
+# 党派口水（「民主党应该如何……」）和评论专栏（opinion / commentary）。
+# 这两类标题里有 tariff、Fed 这类词，能骗过关键词打分，但对判断当天行情没用。
+NEWS_NOISE = re.compile(
+    r"\b(opinion|commentary|column|editorial|podcast|newsletter|"
+    r"crossword|quiz|horoscope|"
+    r"democrats?|republicans?|senate|congress|election|midterms?|"
+    r"campaign|impeach|inaugurat|gop)\b", re.I)
+
+
+def fetch_news(stage, focus_sectors, now_cn):
+    """重点海外新闻：盘前看隔夜，盘中看开盘后新出的。
+
+    三个硬约束：
+    1. 宁缺毋滥——没有合格条目这一栏整个不出现，不用「暂无要闻」占位。
+    2. 只保留落在市场/产业语汇里的（pick_foreign_news 已经过 market_related 过滤），
+       政治口水、明星八卦、纯观点专栏一律不进。
+    3. 只给「发生了什么」，不写「所以涨跌」——标题本身是事实，因果是读者的判断，
+       简报不替读者下这个结论。
+    """
+    if stage == "pre":
+        windows = [12]          # 盘前：过去 12 小时，覆盖隔夜到盘前
+    else:
+        windows = [4, 12]       # 盘中：先看开盘至今，不够 2 条再放宽到 12 小时
+
+    for hours in windows:
+        start = now_cn - timedelta(hours=hours)
+        try:
+            items = fetch_foreign_news(start, now_cn)
+        except Exception as e:                          # noqa: BLE001
+            print(f"[WARN] 海外新闻抓取失败：{e}", file=sys.stderr)
+            return []
+        picked = [p for p in pick_foreign_news(items, limit=NEWS_LIMIT + 3,
+                                               focus_sectors=focus_sectors)
+                  if p.get("title") and not NEWS_NOISE.search(p["title"])]
+        # 盘中窗口太窄常常筛不出东西，放宽一次再决定要不要显示
+        if len(picked) < 2 and hours != windows[-1]:
+            continue
+
+        out = []
+        for p in picked[:NEWS_LIMIT]:
+            zh = (translate(p["title"]) or "").strip()
+            if not zh:
+                continue
+            zh = zh.rstrip(".。 ")
+            if len(zh) > NEWS_MAXLEN:
+                zh = zh[:NEWS_MAXLEN].rstrip() + "…"
+            out.append({"cn": zh, "source": p.get("source", ""),
+                        "time": p.get("time", ""), "url": p.get("url", "")})
+        if out:
+            print(f"[INFO] 海外要闻 {len(out)} 条（窗口 {hours} 小时）")
+        return out
+    return []
+
+
 def render(stage, d):
     """生成推送正文。纯文本，手机上一屏可读。"""
     idx, sectors, mag7, macro = d["indices"], d["sectors"], d["mag7"], d["macro"]
@@ -464,6 +525,15 @@ def render(stage, d):
     if macro:
         lines.append("")
         lines.append(f"【宏观】{_line(macro, '{name} {pct}')}")
+
+    # 海外要闻：只陈述发生了什么，不给「所以涨/跌」的因果。
+    # 标题里已经带了时间与来源，读者自己能判断这条信息的新鲜度和分量。
+    if d.get("news"):
+        lines.append("")
+        lines.append("【海外要闻 · 北京时间】")
+        for n in d["news"]:
+            tail = "，".join(x for x in (n.get("source"), n.get("time")) if x)
+            lines.append(f"· {n['cn']}" + (f"（{tail}）" if tail else ""))
 
     # 今日关注：只留「还没发生」的事。
     # 盘前档财报在 09:00 前已陆续公布，结果已经体现在上面那行盘前价里，
@@ -529,6 +599,8 @@ def main():
     ap.add_argument("--stage", choices=["pre", "mid"], required=True)
     ap.add_argument("--no-calendar", action="store_true",
                     help="跳过财报/经济数据抓取（本地调试用，省时间）")
+    ap.add_argument("--no-news", action="store_true",
+                    help="跳过海外新闻抓取（本地调试用，省翻译耗时）")
     args = ap.parse_args()
     stage = args.stage
 
@@ -627,6 +699,16 @@ def main():
         except Exception as e:                          # noqa: BLE001
             print(f"[WARN] 经济数据失败：{e}", file=sys.stderr)
 
+    # 海外要闻：把当日领涨方向传进去，让与主线相关的新闻优先排前面
+    news = []
+    if not args.no_news:
+        focus = [s["name"] for s in sorted(sectors, key=lambda x: -x["pct"])[:2]
+                 if s["pct"] > 0.15]
+        try:
+            news = fetch_news(stage, focus, now_cn)
+        except Exception as e:                          # noqa: BLE001
+            print(f"[WARN] 海外新闻失败：{e}", file=sys.stderr)
+
     # 盘前 → 盘中的对比
     diff = ""
     snap_path = os.path.join(SNAP_DIR, f"{now_et:%Y-%m-%d}.json")
@@ -668,6 +750,7 @@ def main():
         "judge": judge,
         "earnings": earnings,
         "econ": econ,
+        "news": news,
         "diff": diff,
         "date_hits": f"{hit}/{total}",
     }

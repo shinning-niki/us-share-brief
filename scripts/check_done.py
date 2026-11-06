@@ -47,14 +47,27 @@ TZ_CN = datetime.timezone(datetime.timedelta(hours=8))
 today = datetime.datetime.now(TZ_CN).strftime("%Y-%m-%d")
 force = "--force" in sys.argv
 
+# 阶段：close（收盘，默认）/ pre（盘前）/ mid（盘中）
+# 三段简报共用同一个 sent.json，但用不同的 key，互不覆盖：
+#   收盘  2026-11-06
+#   盘前  2026-11-06#pre
+#   盘中  2026-11-06#mid
+# 默认 close 且 key 就是裸日期——保持与存量标记完全兼容，不改动收盘链路。
+stage = "close"
+if "--stage" in sys.argv:
+    i = sys.argv.index("--stage")
+    if i + 1 < len(sys.argv):
+        stage = sys.argv[i + 1].strip() or "close"
+key = today if stage == "close" else f"{today}#{stage}"
+
 done = False
 trade_date = ""
 if os.path.exists(SENT):
     try:
         with open(SENT, encoding="utf-8") as f:
             data = json.load(f) or {}
-        done = today in data
-        trade_date = data.get(today, "") or ""
+        done = key in data
+        trade_date = data.get(key, "") or ""
     except (ValueError, OSError) as exc:
         # 标记文件损坏不应该阻塞发送——宁可重复推一次，不可漏发
         print(f"[WARN] 读取 sent.json 失败：{exc}", file=sys.stderr)
@@ -63,6 +76,8 @@ if os.path.exists(SENT):
 skip = done and not force
 
 print(f"today={today}")
+print(f"stage={stage}")
+print(f"key={key}")
 print(f"trade_date={trade_date}")
 print(f"done={'true' if done else 'false'}")
 print(f"force={'true' if force else 'false'}")

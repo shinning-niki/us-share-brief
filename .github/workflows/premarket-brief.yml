@@ -59,6 +59,9 @@ on:
         description: '强制重跑（忽略当日已完成判断）'
         type: boolean
         default: false
+  # 手动补发通道：curl -d '{"event_type":"pre"}' 即可，只需 Contents 写权限
+  repository_dispatch:
+    types: [pre]
 
 permissions:
   contents: write
@@ -93,7 +96,7 @@ jobs:
         id: gate
         run: |
           ARG=""
-          if [ "${{ github.event.inputs.force }}" = "true" ]; then ARG="--force"; fi
+          if [ "${{ github.event.inputs.force }}" = "true" ] || [ "${{ github.event.client_payload.force }}" = "true" ]; then ARG="--force"; fi
           OUT=$(python scripts/check_done.py --stage pre $ARG)
           echo "$OUT"
           SKIP=$(echo "$OUT" | grep '^skip=' | cut -d= -f2)
@@ -114,7 +117,7 @@ jobs:
         if: steps.gate.outputs.skip != 'true' && steps.wait.outputs.reason != 'too-late'
         run: |
           ARG=""
-          if [ "${{ github.event.inputs.force }}" = "true" ]; then ARG="--force"; fi
+          if [ "${{ github.event.inputs.force }}" = "true" ] || [ "${{ github.event.client_payload.force }}" = "true" ]; then ARG="--force"; fi
           OUT=$(python scripts/check_done.py --stage pre $ARG)
           echo "$OUT"
           SKIP=$(echo "$OUT" | grep '^skip=' | cut -d= -f2)

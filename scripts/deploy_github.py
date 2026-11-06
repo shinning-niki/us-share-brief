@@ -34,12 +34,14 @@ from urllib.parse import quote
 REPO_NAME = os.environ.get("REPO_NAME", "us-share-brief")
 TOKEN = os.environ.get("GH_TOKEN", "").strip()
 BARK = os.environ.get("BARK_URL", "").strip()
-WORKFLOW = "daily-brief.yml"
+WORKFLOW = os.environ.get("TRIGGER_WORKFLOW", "").strip()  # 空=部署后不自动触发
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 API = "https://api.github.com"
 
-SKIP_DIRS = {".git", "__pycache__", "dist"}
+# data/ 整体跳过：里面全是运行产物（brief.json / sent.json / sessions/ 快照），
+# 线上版本永远比本地新。一旦回传，会把当天的推送标记和成交额历史一起回滚。
+SKIP_DIRS = {".git", "__pycache__", "dist", "data"}
 SKIP_FILES = {".DS_Store"}
 
 # data/ 下是运行产物。本地副本往往比线上旧（云端每天在写），
@@ -185,10 +187,13 @@ def main():
                 print("[OK] Secret BARK_URL 已写入" if c2 in (201, 204)
                       else "[WARN] Secret 写入失败")
 
-    time.sleep(2)
-    c, _ = call("POST", f"/repos/{owner}/{REPO_NAME}/actions/workflows/{WORKFLOW}/dispatches",
-                {"ref": "main"}, ok=(204,))
-    print("[OK] 已触发工作流" if c == 204 else "[WARN] 触发失败，可在 Actions 页面手动 Run")
+    if WORKFLOW:
+        time.sleep(2)
+        c, _ = call("POST", f"/repos/{owner}/{REPO_NAME}/actions/workflows/{WORKFLOW}/dispatches",
+                    {"ref": "main"}, ok=(204,))
+        print(f"[OK] 已触发 {WORKFLOW}" if c == 204 else "[WARN] 触发失败，可在 Actions 页面手动 Run")
+    else:
+        print("[INFO] 未指定 TRIGGER_WORKFLOW，部署后不自动触发（避免盘前/盘中时段误发收盘简报）")
 
     print(f"\n仓库：https://github.com/{owner}/{REPO_NAME}")
     print(f"页面：https://{owner}.github.io/{REPO_NAME}/")

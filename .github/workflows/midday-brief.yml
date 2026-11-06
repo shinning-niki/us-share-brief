@@ -44,6 +44,14 @@ on:
         description: '强制重跑（忽略当日已完成判断）'
         type: boolean
         default: false
+  # 手动补发通道。cron 被 GitHub 静默丢弃时，一条命令就能补，不必等下一个触发点：
+  #   curl -X POST -H "Authorization: Bearer <token>" \
+  #     https://api.github.com/repos/<owner>/us-share-brief/dispatches \
+  #     -d '{"event_type":"mid"}'
+  # 之所以不用 workflow_dispatch：细粒度 token 调它需要 Actions 权限，
+  # 而 repository_dispatch 只要 Contents 写权限，权限要求更低、更不容易失效。
+  repository_dispatch:
+    types: [mid]
 
 permissions:
   contents: write
@@ -75,7 +83,7 @@ jobs:
         id: gate
         run: |
           ARG=""
-          if [ "${{ github.event.inputs.force }}" = "true" ]; then ARG="--force"; fi
+          if [ "${{ github.event.inputs.force }}" = "true" ] || [ "${{ github.event.client_payload.force }}" = "true" ]; then ARG="--force"; fi
           OUT=$(python scripts/check_done.py --stage mid $ARG)
           echo "$OUT"
           SKIP=$(echo "$OUT" | grep '^skip=' | cut -d= -f2)
@@ -94,7 +102,7 @@ jobs:
         if: steps.gate.outputs.skip != 'true' && steps.wait.outputs.reason != 'too-late'
         run: |
           ARG=""
-          if [ "${{ github.event.inputs.force }}" = "true" ]; then ARG="--force"; fi
+          if [ "${{ github.event.inputs.force }}" = "true" ] || [ "${{ github.event.client_payload.force }}" = "true" ]; then ARG="--force"; fi
           OUT=$(python scripts/check_done.py --stage mid $ARG)
           echo "$OUT"
           SKIP=$(echo "$OUT" | grep '^skip=' | cut -d= -f2)

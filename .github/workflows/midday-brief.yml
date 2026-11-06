@@ -1,0 +1,171 @@
+name: 美股盘中简报
+
+# ===========================================================================
+# 每天晚上 23:30（北京）发一轮盘中交易涨跌
+# ===========================================================================
+# 时间锚点：美东 10:30（开盘后 60 分钟）
+# ---------------------------------------------------------
+# 冬令时下美东 10:30 正好是北京 23:30，夏令时是北京 22:30。
+#
+# 为什么锚美东而不是写死 UTC 15:30：这一轮的核心是「开盘一小时」，开盘
+# 时刻跟着美东走。冬夏令时若写死 UTC，夏天就变成「开盘两小时」，涨跌
+# 已经走完大半，跟「开盘定调」是两件事。
+#
+# 与盘前简报的关系
+# ---------------------------------------------------------
+# 盘前（premarket-brief.yml）会在 data/sessions/<日期>.json 留下快照，
+# 这一轮读它做「盘前方向开盘后还在不在」的对比。这是盘中简报唯一无法
+# 被收盘简报替代的价值：判断盘前情绪是被证实还是被打脸。
+# 所以两步之间有数据依赖，但用不同 concurrency group 并行不互斥——
+# 盘前 22:00 结束、盘中 23:30 才开始，间隔 90 分钟，不会撞车。
+#
+# 窗口保护
+# ---------------------------------------------------------
+# wait_for_session.py --stage mid 的上限是美东 12:00。超过就放弃：
+# 11 点之后的行情已经不是「开盘一小时」，硬发会把判断建立在错误的
+# 时间语境上。
+# ===========================================================================
+
+on:
+  schedule:
+    # 冬令时 13:00 UTC = ET 08:00（睡 2.5h）；夏令时 = ET 09:00（睡 1.5h）
+    - cron: '0 13 * * 1-5'
+    - cron: '30 13 * * 1-5'
+    - cron: '0 14 * * 1-5'
+    - cron: '30 14 * * 1-5'
+    - cron: '0 15 * * 1-5'
+    # 冬令时 15:30 UTC = ET 10:30 目标时刻
+    - cron: '30 15 * * 1-5'
+    - cron: '0 16 * * 1-5'
+    - cron: '30 16 * * 1-5'
+  workflow_dispatch:
+    inputs:
+      force:
+        description: '强制重跑（忽略当日已完成判断）'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: us-midday-brief
+  cancel-in-progress: false
+
+jobs:
+  midday:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    env:
+      TZ: Asia/Shanghai
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: 设置 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: 去重闸门（今日盘中是否已发）
+        id: gate
+        run: |
+          ARG=""
+          if [ "${{ github.event.inputs.force }}" = "true" ]; then ARG="--force"; fi
+          OUT=$(python scripts/check_done.py --stage mid $ARG)
+          echo "$OUT"
+          SKIP=$(echo "$OUT" | grep '^skip=' | cut -d= -f2)
+          echo "skip=$SKIP" >> "$GITHUB_OUTPUT"
+          if [ "$SKIP" = "true" ]; then
+            echo "::notice title=已推送::今日盘中简报已完成，本次触发跳过"
+          fi
+
+      - name: 等待到盘中时刻（吸收 cron 延迟）
+        id: wait
+        if: steps.gate.outputs.skip != 'true'
+        run: python scripts/wait_for_session.py --stage mid
+
+      - name: 醒来复查闸门
+        id: gate2
+        if: steps.gate.outputs.skip != 'true' && steps.wait.outputs.reason != 'too-late'
+        run: |
+          ARG=""
+          if [ "${{ github.event.inputs.force }}" = "true" ]; then ARG="--force"; fi
+          OUT=$(python scripts/check_done.py --stage mid $ARG)
+          echo "$OUT"
+          SKIP=$(echo "$OUT" | grep '^skip=' | cut -d= -f2)
+          echo "skip2=$SKIP" >> "$GITHUB_OUTPUT"
+          if [ "$SKIP" = "true" ]; then
+            echo "::notice title=已被其他触发点完成::本次跳过，不重复推送"
+          fi
+
+      - name: 同步最新代码
+        if: steps.gate.outputs.skip != 'true' && steps.wait.outputs.reason != 'too-late' && steps.gate2.outputs.skip2 != 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git pull --rebase --autostash origin main || echo "::warning::代码同步失败，继续执行"
+
+      - name: 抓取盘中行情
+        id: fetch
+        if: steps.gate.outputs.skip != 'true' && steps.wait.outputs.reason != 'too-late' && steps.gate2.outputs.skip2 != 'true'
+        run: |
+          python scripts/fetch_intraday.py --stage mid
+          SKIPPED=$(python -c "import json;print(json.load(open('data/intraday.json')).get('skipped', False))")
+          echo "skipped=$SKIPPED" >> $GITHUB_OUTPUT
+          if [ "$SKIPPED" = "True" ]; then
+            echo "::notice title=休市::今日非交易日或数据源滞后，跳过推送"
+          fi
+
+      - name: 推送到手机
+        id: notify
+        if: steps.fetch.outputs.skipped == 'False'
+        env:
+          FEISHU_WEBHOOK: ${{ secrets.FEISHU_WEBHOOK }}
+          BARK_URL: ${{ secrets.BARK_URL }}
+        run: python scripts/notify_intraday.py
+
+      - name: 标记本日盘中已完成
+        id: mark
+        if: steps.fetch.outputs.skipped == 'False'
+        run: |
+          python scripts/mark_done.py --stage mid
+          git add data/sent.json data/intraday.json
+          git diff --quiet --cached || git commit -m "chore: 盘中简报已推送 $(date +%Y-%m-%d) [skip ci]"
+          git pull --rebase --autostash origin main || echo "::warning::同步失败"
+          git push || echo "::warning::标记推送失败，下个触发点可能重复推送"
+
+      - name: 失败告警
+        if: failure()
+        env:
+          BARK_URL: ${{ secrets.BARK_URL }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          STEP="未知环节"
+          if [ "${{ steps.fetch.outcome }}" = "failure" ]; then STEP="抓取盘中行情"; fi
+          if [ "${{ steps.notify.outcome }}" = "failure" ]; then STEP="推送到手机"; fi
+          python scripts/alert.py "美股盘中简报失败" \
+            "失败环节：$STEP｜触发：${{ github.event_name }}｜下一个触发点会自动重试"
+
+      - name: 运行摘要
+        if: always()
+        run: |
+          echo "## 美股盘中简报运行记录" >> $GITHUB_STEP_SUMMARY
+          echo "| 项目 | 结果 |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| 触发方式 | ${{ github.event_name }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 第一道闸门 | skip=${{ steps.gate.outputs.skip }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 等待 | reason=${{ steps.wait.outputs.reason }}｜睡了 ${{ steps.wait.outputs.waited }} 秒 |" >> $GITHUB_STEP_SUMMARY
+          echo "| 复查闸门 | skip=${{ steps.gate2.outputs.skip2 }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 是否休市跳过 | ${{ steps.fetch.outputs.skipped }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 手机推送 | ${{ steps.notify.outcome }} |" >> $GITHUB_STEP_SUMMARY
+          if [ -f data/intraday.json ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            python -c "import json;print(json.load(open('data/intraday.json')).get('text',''))" >> $GITHUB_STEP_SUMMARY 2>/dev/null || true
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          fi

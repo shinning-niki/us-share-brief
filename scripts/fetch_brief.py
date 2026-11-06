@@ -947,6 +947,22 @@ ECON_INFO_DETAIL = [
      ("成屋销售", "二手房成交，占美国房屋交易的大头")),
     (re.compile(r"New Home Sales", re.I), None,
      ("新屋销售", "新房成交，比开工更贴近终端需求")),
+
+    # --- 下面四条是「同名不同义」的纠正 ---------------------------------
+    # 原来 Contining / Initial / 4-Week Avg 三条 Jobless Claims 全部落到
+    # ECON_INFO 的 "Jobless" 上，都显示成「初请失业金人数」，同一份简报里
+    # 出现两三个同名条目、数值却差一个数量级（1,710K vs 197K），
+    # 读者会以为数据自相矛盾。必须按具体名称区分。
+    (re.compile(r"4-Week|4 Week", re.I), None,
+     ("失业金申请四周均值", "抹平单周噪声后的趋势线，比单周数更稳")),
+    (re.compile(r"Continuing", re.I), None,
+     ("续请失业金人数", "已在领失业金的总人数，反映再就业的难度")),
+    (re.compile(r"Initial", re.I), None,
+     ("首次申请失业金人数", "每周新增裁员的最快读数，最灵敏的就业高频指标")),
+    # Nonfarm Productivity 是「生产率」，不是「非农就业人数」。
+    # 原来被 Nonfarm 关键词误捕成就业数据，方向完全错。
+    (re.compile(r"Productivity", re.I), None,
+     ("非农生产率", "单位工时产出效率，决定工资上涨会不会传导成通胀")),
 ]
 
 

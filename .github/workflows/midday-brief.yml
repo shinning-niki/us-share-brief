@@ -38,6 +38,9 @@ on:
     - cron: '30 15 * * 1-5'
     - cron: '0 16 * * 1-5'
     - cron: '30 16 * * 1-5'
+    # 【临时探针】只在 2026-11-06（UTC 周五）15:50 触发一次，用于验证
+    # 新建工作流的 schedule 是否真的会被 GitHub 调度。验证完即删。
+    - cron: '50 15 * * 5'
   workflow_dispatch:
     inputs:
       force:

@@ -1,0 +1,322 @@
+{
+  "stage": "pre",
+  "date": "2026-11-10",
+  "weekday": "周二",
+  "generated_at": "2026-11-10 22:00",
+  "et_clock": "09:00",
+  "cn_clock": "22:00",
+  "minutes_to_open": 30,
+  "minutes_open": 0,
+  "quote_ts": "Nov 10 08:59AM EST",
+  "data_cn": "21:59",
+  "indices": {
+    "道琼斯": {
+      "name": "道琼斯",
+      "pct": -0.23,
+      "price": 522.11
+    },
+    "纳斯达克": {
+      "name": "纳斯达克",
+      "pct": 2.16,
+      "price": 670.3
+    },
+    "标普500": {
+      "name": "标普500",
+      "pct": -0.72,
+      "price": 747.24
+    },
+    "罗素2000": {
+      "name": "罗素2000",
+      "pct": -1.05,
+      "price": 279.54
+    },
+    "费城半导体": {
+      "name": "费城半导体",
+      "pct": 2.49,
+      "price": 475.5
+    }
+  },
+  "sectors": [
+    {
+      "name": "科技",
+      "price": 168.33,
+      "base": 170.88,
+      "pct": -1.49,
+      "ts": "Nov 10 08:59AM EST",
+      "vol": 90033.0,
+      "has_pre": true
+    },
+    {
+      "name": "通信服务",
+      "price": 107.3,
+      "base": 107.36,
+      "pct": -0.06,
+      "ts": "Nov 10 08:59AM EST",
+      "vol": 3435.0,
+      "has_pre": true
+    },
+    {
+      "name": "可选消费",
+      "price": 120.52,
+      "base": 121.01,
+      "pct": -0.4,
+      "ts": "Nov 10 08:59AM EST",
+      "vol": 11628.0,
+      "has_pre": true
+    },
+    {
+      "name": "必需消费",
+      "price": 91.31,
+      "base": 90.89,
+      "pct": 0.46,
+      "ts": "Nov 10 08:59AM EST",
+      "vol": 87005.0,
+      "has_pre": true
+    },
+    {
+      "name": "金融",
+      "price": 58.07,
+      "base": 57.99,
+      "pct": 0.14,
+      "ts": "Nov 10 08:59AM EST",
+      "vol": 311875.0,
+      "has_pre": true
+    },
+    {
+      "name": "医疗保健",
+      "price": 189.26,
+      "base": 188.33,
+      "pct": 0.49,
+      "ts": "Nov 10 08:59AM EST",
+      "vol": 28775.0,
+      "has_pre": true
+    },
+    {
+      "name": "工业",
+      "price": 167.8,
+      "base": 168.89,
+      "pct": -0.65,
+      "ts": "Nov 10 08:57AM EST",
+      "vol": 13197.0,
+      "has_pre": true
+    },
+    {
+      "name": "材料",
+      "price": 52.71,
+      "base": 52.94,
+      "pct": -0.43,
+      "ts": "Nov 10 08:58AM EST",
+      "vol": 14111.0,
+      "has_pre": true
+    },
+    {
+      "name": "能源",
+      "price": 61.2,
+      "base": 61.94,
+      "pct": -1.19,
+      "ts": "Nov 10 08:59AM EST",
+      "vol": 249890.0,
+      "has_pre": true
+    },
+    {
+      "name": "公用事业",
+      "price": 43.69,
+      "base": 43.79,
+      "pct": -0.22,
+      "ts": "Nov 10 08:58AM EST",
+      "vol": 147044.0,
+      "has_pre": true
+    },
+    {
+      "name": "房地产",
+      "price": 44.59,
+      "base": 44.64,
+      "pct": -0.11,
+      "ts": "Nov 10 08:57AM EST",
+      "vol": 3133.0,
+      "has_pre": true
+    }
+  ],
+  "mag7": [
+    {
+      "name": "英伟达",
+      "price": 175.31,
+      "base": 186.64,
+      "pct": -6.07,
+      "ts": "Nov 10 08:59AM EST",
+      "vol": 15220257.0,
+      "has_pre": true
+    },
+    {
+      "name": "苹果",
+      "price": 352.54,
+      "base": 342.37,
+      "pct": 2.97,
+      "ts": "Nov 10 08:59AM EST",
+      "vol": 491246.0,
+      "has_pre": true
+    },
+    {
+      "name": "微软",
+      "price": 542.95,
+      "base": 530.61,
+      "pct": 2.33,
+      "ts": "Nov 10 08:59AM EST",
+      "vol": 222000.0,
+      "has_pre": true
+    },
+    {
+      "name": "谷歌",
+      "price": 287.5,
+      "base": 284.78,
+      "pct": 0.96,
+      "ts": "Nov 10 08:59AM EST",
+      "vol": 681755.0,
+      "has_pre": true
+    },
+    {
+      "name": "亚马逊",
+      "price": 265.15,
+      "base": 259.3,
+      "pct": 2.26,
+      "ts": "Nov 10 08:59AM EST",
+      "vol": 515885.0,
+      "has_pre": true
+    },
+    {
+      "name": "Meta",
+      "price": 638.36,
+      "base": 610.15,
+      "pct": 4.62,
+      "ts": "Nov 10 08:59AM EST",
+      "vol": 290320.0,
+      "has_pre": true
+    },
+    {
+      "name": "特斯拉",
+      "price": 370.79,
+      "base": 358.22,
+      "pct": 3.51,
+      "ts": "Nov 10 08:59AM EST",
+      "vol": 822165.0,
+      "has_pre": true
+    }
+  ],
+  "macro": [
+    {
+      "name": "20年美债",
+      "price": 81.28,
+      "base": 81.92,
+      "pct": -0.78,
+      "ts": "Nov 10 08:59AM EST",
+      "vol": 1152794.0,
+      "has_pre": true
+    },
+    {
+      "name": "美元",
+      "price": 29.08,
+      "base": 28.97,
+      "pct": 0.38,
+      "ts": "Nov 10 08:57AM EST",
+      "vol": 2739.0,
+      "has_pre": true
+    },
+    {
+      "name": "黄金",
+      "price": 371.32,
+      "base": 379.53,
+      "pct": -2.16,
+      "ts": "Nov 10 08:59AM EST",
+      "vol": 661979.0,
+      "has_pre": true
+    },
+    {
+      "name": "原油",
+      "price": 138.41,
+      "base": 142.66,
+      "pct": -2.98,
+      "ts": "Nov 10 08:59AM EST",
+      "vol": 534941.0,
+      "has_pre": true
+    }
+  ],
+  "movers": [
+    {
+      "name": "超威半导体",
+      "price": 494.77,
+      "base": 449.04,
+      "pct": 10.18,
+      "ts": "Nov 10 08:59AM EST",
+      "vol": 1604785.0,
+      "has_pre": true
+    },
+    {
+      "name": "博通",
+      "price": 312.61,
+      "base": 293.69,
+      "pct": 6.44,
+      "ts": "Nov 10 08:59AM EST",
+      "vol": 532696.0,
+      "has_pre": true
+    },
+    {
+      "name": "MicroStrategy",
+      "price": 122.24,
+      "base": 128.93,
+      "pct": -5.19,
+      "ts": "Nov 10 08:59AM EST",
+      "vol": 580537.0,
+      "has_pre": true
+    },
+    {
+      "name": "卡特彼勒",
+      "price": 570.16,
+      "base": 598.88,
+      "pct": -4.8,
+      "ts": "Nov 10 09:00AM EST",
+      "vol": 111290.0,
+      "has_pre": true
+    },
+    {
+      "name": "Palantir",
+      "price": 166.1,
+      "base": 160.38,
+      "pct": 3.57,
+      "ts": "Nov 10 08:59AM EST",
+      "vol": 288732.0,
+      "has_pre": true
+    }
+  ],
+  "judge": {
+    "breadth": "多空混杂",
+    "up": 11,
+    "total": 23,
+    "avg": 0.42,
+    "struct": "涨幅高度集中在芯片链"
+  },
+  "earnings": [],
+  "econ": [],
+  "news": [
+    {
+      "cn": "随着芯片股因英伟达丑闻而上涨，“市场因坏消息而触底”这句格言是正确的",
+      "source": "CNBC",
+      "time": "21:19",
+      "url": "https://www.cnbc.com/2026/11/10/chip-stocks-rally-nvidia-scandal.html"
+    },
+    {
+      "cn": "全球芯片热潮席卷台积电 10 月销售额跃升",
+      "source": "CNBC",
+      "time": "13:42",
+      "url": "https://www.cnbc.com/2026/11/10/tsmcs-october-sales-.html"
+    },
+    {
+      "cn": "特朗普称伊朗战争“很快”结束，淡化新打击的前景",
+      "source": "CNBC",
+      "time": "15:00",
+      "url": "https://www.cnbc.com/2026/11/10/trump-iran-war-hormuz-.html"
+    }
+  ],
+  "diff": "",
+  "date_hits": "27/27",
+  "text": "距开盘 30 分钟 · 美东 09:00 · 北京 22:00\n\n【指数 · ETF 代理】\n道琼斯 -0.2% ｜ 纳斯达克 +2.2% ｜ 标普500 -0.7% ｜ 罗素2000 -1.1% ｜ 费城半导体 +2.5%\n\n【定调】多空混杂，涨幅高度集中在芯片链。\n\n【板块】强 医疗保健 +0.5%、必需消费 +0.5% ｜ 弱 科技 -1.5%、能源 -1.2%\n\n【七巨头】英伟达 -6.1%、苹果 +3.0%、微软 +2.3%、谷歌 +1.0%、亚马逊 +2.3%、Meta +4.6%、特斯拉 +3.5%\n\n【异动】超威半导体 +10.2%、博通 +6.4%、MicroStrategy -5.2%、卡特彼勒 -4.8%、Palantir +3.6%\n\n【宏观】20年美债 -0.8% ｜ 美元 +0.4% ｜ 黄金 -2.2% ｜ 原油 -3.0%\n\n【海外要闻 · 北京时间】\n· 随着芯片股因英伟达丑闻而上涨，“市场因坏消息而触底”这句格言是正确的（CNBC，21:19）\n· 全球芯片热潮席卷台积电 10 月销售额跃升（CNBC，13:42）\n· 特朗普称伊朗战争“很快”结束，淡化新打击的前景（CNBC，15:00）\n\n指数为跟踪 ETF 报价 · 数据时间 北京 21:59 · 仅供参考，不构成投资建议"
+}

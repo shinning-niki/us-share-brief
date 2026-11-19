@@ -1,368 +1,368 @@
 {
   "stage": "pre",
-  "date": "2026-11-18",
-  "weekday": "周三",
-  "generated_at": "2026-11-18 22:00",
+  "date": "2026-11-19",
+  "weekday": "周四",
+  "generated_at": "2026-11-19 22:00",
   "et_clock": "09:00",
   "cn_clock": "22:00",
   "minutes_to_open": 30,
   "minutes_open": 0,
-  "quote_ts": "Nov 18 08:59AM EST",
+  "quote_ts": "Nov 19 08:59AM EST",
   "data_cn": "21:59",
   "indices": {
     "道琼斯": {
       "name": "道琼斯",
-      "pct": -1.63,
-      "price": 507.26
+      "pct": -0.52,
+      "price": 504.67
     },
     "纳斯达克": {
       "name": "纳斯达克",
-      "pct": 0.03,
-      "price": 661.93
+      "pct": 2.24,
+      "price": 671.65
     },
     "标普500": {
       "name": "标普500",
-      "pct": -0.68,
-      "price": 734.91
+      "pct": 0.75,
+      "price": 737.91
     },
     "罗素2000": {
       "name": "罗素2000",
-      "pct": -1.67,
-      "price": 268.38
+      "pct": 0.92,
+      "price": 271.54
     },
     "费城半导体": {
       "name": "费城半导体",
-      "pct": 1.75,
-      "price": 469.97
+      "pct": 2.75,
+      "price": 472.74
     }
   },
   "sectors": [
     {
       "name": "科技",
-      "price": 165.1,
-      "base": 164.76,
-      "pct": 0.21,
-      "ts": "Nov 18 08:59AM EST",
-      "vol": 137142.0,
+      "price": 167.34,
+      "base": 163.26,
+      "pct": 2.5,
+      "ts": "Nov 19 08:57AM EST",
+      "vol": 83147.0,
       "has_pre": true
     },
     {
       "name": "通信服务",
-      "price": 105.49,
-      "base": 106.82,
-      "pct": -1.25,
-      "ts": "Nov 18 08:59AM EST",
-      "vol": 2684.0,
+      "price": 106.49,
+      "base": 105.26,
+      "pct": 1.17,
+      "ts": "Nov 19 08:49AM EST",
+      "vol": 8787.0,
       "has_pre": true
     },
     {
       "name": "可选消费",
-      "price": 117.05,
-      "base": 118.15,
-      "pct": -0.93,
-      "ts": "Nov 18 08:59AM EST",
-      "vol": 973.0,
+      "price": 119.92,
+      "base": 117.1,
+      "pct": 2.41,
+      "ts": "Nov 19 08:59AM EST",
+      "vol": 15081.0,
       "has_pre": true
     },
     {
       "name": "必需消费",
-      "price": 90.95,
-      "base": 92.6,
-      "pct": -1.78,
-      "ts": "Nov 18 08:55AM EST",
-      "vol": 142970.0,
+      "price": 90.4,
+      "base": 91.46,
+      "pct": -1.16,
+      "ts": "Nov 19 08:59AM EST",
+      "vol": 135175.0,
       "has_pre": true
     },
     {
       "name": "金融",
-      "price": 56.98,
-      "base": 58.18,
-      "pct": -2.06,
-      "ts": "Nov 18 08:59AM EST",
-      "vol": 153959.0,
+      "price": 56.62,
+      "base": 57.07,
+      "pct": -0.78,
+      "ts": "Nov 19 08:59AM EST",
+      "vol": 108883.0,
       "has_pre": true
     },
     {
       "name": "医疗保健",
-      "price": 184.21,
-      "base": 187.88,
-      "pct": -1.95,
-      "ts": "Nov 18 08:59AM EST",
-      "vol": 14020.0,
+      "price": 180.52,
+      "base": 185.24,
+      "pct": -2.55,
+      "ts": "Nov 19 08:59AM EST",
+      "vol": 21739.0,
       "has_pre": true
     },
     {
       "name": "工业",
-      "price": 165.0,
-      "base": 165.66,
-      "pct": -0.4,
-      "ts": "Nov 18 08:46AM EST",
-      "vol": 8469.0,
+      "price": 166.06,
+      "base": 164.75,
+      "pct": 0.8,
+      "ts": "Nov 19 08:58AM EST",
+      "vol": 5418.0,
       "has_pre": true
     },
     {
       "name": "材料",
-      "price": 50.55,
-      "base": 51.47,
-      "pct": -1.79,
-      "ts": "Nov 18 08:50AM EST",
-      "vol": 1207.0,
+      "price": 50.41,
+      "base": 50.84,
+      "pct": -0.85,
+      "ts": "Nov 19 08:54AM EST",
+      "vol": 3525.0,
       "has_pre": true
     },
     {
       "name": "能源",
-      "price": 62.98,
-      "base": 63.69,
-      "pct": -1.11,
-      "ts": "Nov 18 08:59AM EST",
-      "vol": 158106.0,
+      "price": 61.59,
+      "base": 63.36,
+      "pct": -2.79,
+      "ts": "Nov 19 08:59AM EST",
+      "vol": 125962.0,
       "has_pre": true
     },
     {
       "name": "公用事业",
-      "price": 43.33,
-      "base": 44.12,
-      "pct": -1.79,
-      "ts": "Nov 18 08:56AM EST",
-      "vol": 45922.0,
+      "price": 43.5,
+      "base": 43.42,
+      "pct": 0.18,
+      "ts": "Nov 19 08:47AM EST",
+      "vol": 57807.0,
       "has_pre": true
     },
     {
       "name": "房地产",
-      "price": 43.55,
-      "base": 44.25,
-      "pct": -1.58,
-      "ts": "Nov 18 08:47AM EST",
-      "vol": 3188.0,
+      "price": 43.68,
+      "base": 43.59,
+      "pct": 0.21,
+      "ts": "Nov 19 08:49AM EST",
+      "vol": 1537.0,
       "has_pre": true
     }
   ],
   "mag7": [
     {
       "name": "英伟达",
-      "price": 159.67,
-      "base": 156.14,
-      "pct": 2.26,
-      "ts": "Nov 18 08:59AM EST",
-      "vol": 18630666.0,
+      "price": 152.77,
+      "base": 155.46,
+      "pct": -1.73,
+      "ts": "Nov 19 08:59AM EST",
+      "vol": 12383202.0,
       "has_pre": true
     },
     {
       "name": "苹果",
-      "price": 351.42,
-      "base": 352.78,
-      "pct": -0.39,
-      "ts": "Nov 18 08:59AM EST",
-      "vol": 927231.0,
+      "price": 353.48,
+      "base": 351.91,
+      "pct": 0.45,
+      "ts": "Nov 19 08:59AM EST",
+      "vol": 2511899.0,
       "has_pre": true
     },
     {
       "name": "微软",
-      "price": 504.4,
-      "base": 517.99,
-      "pct": -2.62,
-      "ts": "Nov 18 08:59AM EST",
-      "vol": 152301.0,
+      "price": 516.54,
+      "base": 506.24,
+      "pct": 2.03,
+      "ts": "Nov 19 08:59AM EST",
+      "vol": 742070.0,
       "has_pre": true
     },
     {
       "name": "谷歌",
-      "price": 283.55,
-      "base": 283.72,
-      "pct": -0.06,
-      "ts": "Nov 18 08:59AM EST",
-      "vol": 479636.0,
+      "price": 293.8,
+      "base": 280.2,
+      "pct": 4.85,
+      "ts": "Nov 19 08:59AM EST",
+      "vol": 1821595.0,
       "has_pre": true
     },
     {
       "name": "亚马逊",
-      "price": 260.06,
-      "base": 257.75,
-      "pct": 0.9,
-      "ts": "Nov 18 08:59AM EST",
-      "vol": 357603.0,
+      "price": 271.95,
+      "base": 257.89,
+      "pct": 5.45,
+      "ts": "Nov 19 08:59AM EST",
+      "vol": 1305553.0,
       "has_pre": true
     },
     {
       "name": "Meta",
-      "price": 618.0,
-      "base": 626.41,
-      "pct": -1.34,
-      "ts": "Nov 18 08:59AM EST",
-      "vol": 166064.0,
+      "price": 624.25,
+      "base": 618.87,
+      "pct": 0.87,
+      "ts": "Nov 19 08:59AM EST",
+      "vol": 296664.0,
       "has_pre": true
     },
     {
       "name": "特斯拉",
-      "price": 383.8,
-      "base": 379.74,
-      "pct": 1.07,
-      "ts": "Nov 18 08:59AM EST",
-      "vol": 328846.0,
+      "price": 392.09,
+      "base": 380.11,
+      "pct": 3.15,
+      "ts": "Nov 19 08:59AM EST",
+      "vol": 611755.0,
       "has_pre": true
     }
   ],
   "macro": [
     {
       "name": "20年美债",
-      "price": 79.75,
-      "base": 79.38,
-      "pct": 0.47,
-      "ts": "Nov 18 08:59AM EST",
-      "vol": 1104675.0,
+      "price": 80.17,
+      "base": 79.55,
+      "pct": 0.78,
+      "ts": "Nov 19 08:59AM EST",
+      "vol": 997366.0,
       "has_pre": true
     },
     {
       "name": "美元",
-      "price": 29.6,
-      "base": 29.56,
-      "pct": 0.14,
-      "ts": "Nov 18 08:22AM EST",
-      "vol": 6613.0,
+      "price": 29.59,
+      "base": 29.54,
+      "pct": 0.17,
+      "ts": "Nov 19 08:57AM EST",
+      "vol": 2302.0,
       "has_pre": true
     },
     {
       "name": "黄金",
-      "price": 346.56,
-      "base": 352.93,
-      "pct": -1.81,
-      "ts": "Nov 18 08:59AM EST",
-      "vol": 975214.0,
+      "price": 340.32,
+      "base": 352.48,
+      "pct": -3.45,
+      "ts": "Nov 19 08:59AM EST",
+      "vol": 442442.0,
       "has_pre": true
     },
     {
       "name": "原油",
-      "price": 139.41,
-      "base": 140.03,
-      "pct": -0.44,
-      "ts": "Nov 18 08:59AM EST",
-      "vol": 665942.0,
+      "price": 138.52,
+      "base": 140.24,
+      "pct": -1.23,
+      "ts": "Nov 19 08:59AM EST",
+      "vol": 408995.0,
       "has_pre": true
     }
   ],
   "movers": [
     {
-      "name": "ARM",
-      "price": 188.3,
-      "base": 175.05,
-      "pct": 7.57,
-      "ts": "Nov 18 08:59AM EST",
-      "vol": 143077.0,
-      "has_pre": true
-    },
-    {
-      "name": "MicroStrategy",
-      "price": 95.64,
-      "base": 103.03,
-      "pct": -7.17,
-      "ts": "Nov 18 08:59AM EST",
-      "vol": 958456.0,
-      "has_pre": true
-    },
-    {
       "name": "联合健康",
-      "price": 389.0,
-      "base": 412.02,
-      "pct": -5.59,
-      "ts": "Nov 18 08:59AM EST",
-      "vol": 14546.0,
+      "price": 350.94,
+      "base": 389.68,
+      "pct": -9.94,
+      "ts": "Nov 19 08:59AM EST",
+      "vol": 79454.0,
+      "has_pre": true
+    },
+    {
+      "name": "超威半导体",
+      "price": 539.84,
+      "base": 503.41,
+      "pct": 7.24,
+      "ts": "Nov 19 08:59AM EST",
+      "vol": 1066879.0,
       "has_pre": true
     },
     {
       "name": "博通",
-      "price": 349.6,
-      "base": 333.4,
-      "pct": 4.86,
-      "ts": "Nov 18 08:59AM EST",
-      "vol": 316708.0,
+      "price": 363.25,
+      "base": 341.6,
+      "pct": 6.34,
+      "ts": "Nov 19 08:59AM EST",
+      "vol": 485647.0,
       "has_pre": true
     },
     {
-      "name": "Coinbase",
-      "price": 115.32,
-      "base": 119.84,
-      "pct": -3.77,
-      "ts": "Nov 18 08:59AM EST",
-      "vol": 243714.0,
+      "name": "Robinhood",
+      "price": 72.12,
+      "base": 69.19,
+      "pct": 4.24,
+      "ts": "Nov 19 08:59AM EST",
+      "vol": 577878.0,
+      "has_pre": true
+    },
+    {
+      "name": "埃克森美孚",
+      "price": 161.07,
+      "base": 167.21,
+      "pct": -3.67,
+      "ts": "Nov 19 08:59AM EST",
+      "vol": 744176.0,
       "has_pre": true
     }
   ],
   "judge": {
-    "breadth": "普跌",
-    "up": 6,
+    "breadth": "涨多跌少",
+    "up": 16,
     "total": 23,
-    "avg": -0.73,
+    "avg": 0.88,
     "struct": "涨幅高度集中在芯片链"
   },
   "earnings": [
     {
-      "symbol": "TGT",
-      "name": "Target Corporation",
-      "name_cn": "塔吉特",
+      "symbol": "WMT",
+      "name": "Walmart Inc.",
+      "name_cn": "沃尔玛",
       "sector": "零售",
       "when": "盘前",
-      "eps": "$2.05"
+      "eps": "$0.64"
     },
     {
-      "symbol": "PANW",
-      "name": "Palo Alto Networks, Inc.",
-      "name_cn": "",
-      "sector": "",
-      "when": "盘后",
-      "eps": "$0.52"
-    },
-    {
-      "symbol": "TJX",
-      "name": "TJX Companies, Inc. (The)",
+      "symbol": "BABA",
+      "name": "Alibaba Group Holding Limited",
       "name_cn": "",
       "sector": "",
       "when": "盘前",
-      "eps": "$1.33"
+      "eps": "$1.56"
+    },
+    {
+      "symbol": "PDD",
+      "name": "PDD Holdings Inc.",
+      "name_cn": "",
+      "sector": "",
+      "when": "盘前",
+      "eps": "$2.61"
     }
   ],
   "econ": [
     {
       "time": "10:00",
-      "name": "NAHB Housing Market Index",
-      "name_cn": "全美住宅建筑商信心指数",
-      "note": "50 是荣枯线，低于 50 说明房市收缩",
-      "consensus": "29",
-      "previous": "29",
+      "name": "Atlanta Fed GDPNow",
+      "name_cn": "亚特兰大联储 GDPNow 模型",
+      "note": "用已公布数据实时推算的季度 GDP 增速，不是官方终值，会随新数据反复修正",
+      "consensus": "3.4%",
+      "previous": "3.4%",
       "trend": "预期与上期持平",
       "time_cn": "23:00"
     },
     {
-      "time": "11:50",
-      "name": "Atlanta Fed GDPNow",
-      "name_cn": "亚特兰大联储 GDPNow 模型",
-      "note": "用已公布数据实时推算的季度 GDP 增速，不是官方终值，会随新数据反复修正",
-      "consensus": "3.5%",
-      "previous": "3.5%",
-      "trend": "预期与上期持平",
-      "time_cn": "00:50"
+      "time": "12:15",
+      "name": "FOMC Member Daly Speaks",
+      "name_cn": "美联储利率决议/讲话",
+      "note": "直接影响全市场定价锚",
+      "consensus": "",
+      "previous": "&nbsp;",
+      "trend": "",
+      "time_cn": "01:15"
     }
   ],
   "news": [
     {
-      "cn": "尽管黄仁勋丑闻缠身，但英伟达的财报仍推动股价和新云业务上涨",
+      "cn": "Anthropic的IPO创下纪录，推动纳斯达克期货和科技股上涨",
       "source": "CNBC",
-      "time": "21:30",
-      "url": "https://www.cnbc.com/2026/11/18/nvidia-stock-earnings.html"
+      "time": "20:30",
+      "url": "https://www.cnbc.com/2026/11/19/anthropic-lifts-nasdaq-futures-and-tech-stocks-ahead-of-its-record-breaking-ipo.html"
     },
     {
-      "cn": "东南亚的数据中心蓬勃发展离不开中国的需求。美国新规使这条渠道面临风险",
-      "source": "CNBC",
-      "time": "21:15",
-      "url": "https://www.cnbc.com/2026/11/18/nvidia-us-ai-chip-export-controls-data-centers-.html"
-    },
-    {
-      "cn": "这位交易员认为，美联储正在收紧货币政策，经济正在放缓——这是买入债券的绝佳时机",
+      "cn": "Anthropic的IPO能否为股市带来Nvidia的财报所无法带来的影响？",
       "source": "MarketWatch",
-      "time": "19:38",
-      "url": "https://www.marketwatch.com/story/the-fed-is-tightening-the-economy-is-slowing-and-thats-the-perfect-setup-to-buy-bonds-this-trader-argues-b1c88b23?mod=mw_rss_topstories"
+      "time": "20:12",
+      "url": "https://www.marketwatch.com/story/can-anthropics-ipo-do-for-the-stock-market-what-nvidias-earnings-couldnt-be67a434?mod=mw_rss_topstories"
+    },
+    {
+      "cn": "国际能源署（IEA）表示，到2030年，数据中心的用电量可能会翻一番",
+      "source": "CNBC",
+      "time": "19:34",
+      "url": "https://www.cnbc.com/2026/11/19/data-center-electricity-demand-iea.html"
     }
   ],
   "diff": "",
   "date_hits": "27/27",
-  "text": "距开盘 30 分钟 · 美东 09:00 · 北京 22:00\n\n【指数 · ETF 代理】\n道琼斯 -1.6% ｜ 纳斯达克 持平 ｜ 标普500 -0.7% ｜ 罗素2000 -1.7% ｜ 费城半导体 +1.8%\n\n【定调】普跌，涨幅高度集中在芯片链。\n\n【板块】强 科技 +0.2% ｜ 弱 金融 -2.1%、医疗保健 -1.9%\n\n【七巨头】英伟达 +2.3%、苹果 -0.4%、微软 -2.6%、谷歌 -0.1%、亚马逊 +0.9%、Meta -1.3%、特斯拉 +1.1%\n\n【异动】ARM +7.6%、MicroStrategy -7.2%、联合健康 -5.6%、博通 +4.9%、Coinbase -3.8%\n\n【宏观】20年美债 +0.5% ｜ 美元 +0.1% ｜ 黄金 -1.8% ｜ 原油 -0.4%\n\n【海外要闻 · 北京时间】\n· 尽管黄仁勋丑闻缠身，但英伟达的财报仍推动股价和新云业务上涨（CNBC，21:30）\n· 东南亚的数据中心蓬勃发展离不开中国的需求。美国新规使这条渠道面临风险（CNBC，21:15）\n· 这位交易员认为，美联储正在收紧货币政策，经济正在放缓——这是买入债券的绝佳时机（MarketWatch，19:38）\n\n【今日关注】今晚盘后 PANW EPS 预期 $0.52；23:00 全美住宅建筑商信心指数 预期 29；00:50 亚特兰大联储 GDPNow 模型 预期 3.5%\n\n指数为跟踪 ETF 报价 · 数据时间 北京 21:59 · 仅供参考，不构成投资建议"
+  "text": "距开盘 30 分钟 · 美东 09:00 · 北京 22:00\n\n【指数 · ETF 代理】\n道琼斯 -0.5% ｜ 纳斯达克 +2.2% ｜ 标普500 +0.8% ｜ 罗素2000 +0.9% ｜ 费城半导体 +2.8%\n\n【定调】涨多跌少，涨幅高度集中在芯片链。\n\n【板块】强 科技 +2.5%、可选消费 +2.4% ｜ 弱 能源 -2.8%、医疗保健 -2.5%\n\n【七巨头】英伟达 -1.7%、苹果 +0.5%、微软 +2.0%、谷歌 +4.8%、亚马逊 +5.5%、Meta +0.9%、特斯拉 +3.1%\n\n【异动】联合健康 -9.9%、超威半导体 +7.2%、博通 +6.3%、Robinhood +4.2%、埃克森美孚 -3.7%\n\n【宏观】20年美债 +0.8% ｜ 美元 +0.2% ｜ 黄金 -3.5% ｜ 原油 -1.2%\n\n【海外要闻 · 北京时间】\n· Anthropic的IPO创下纪录，推动纳斯达克期货和科技股上涨（CNBC，20:30）\n· Anthropic的IPO能否为股市带来Nvidia的财报所无法带来的影响？（MarketWatch，20:12）\n· 国际能源署（IEA）表示，到2030年，数据中心的用电量可能会翻一番（CNBC，19:34）\n\n【今日关注】23:00 亚特兰大联储 GDPNow 模型 预期 3.4%；01:15 美联储利率决议/讲话（直接影响全市场定价锚）\n\n指数为跟踪 ETF 报价 · 数据时间 北京 21:59 · 仅供参考，不构成投资建议"
 }

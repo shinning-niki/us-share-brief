@@ -1,347 +1,347 @@
 {
-  "stage": "mid",
-  "date": "2026-11-25",
-  "weekday": "周三",
-  "generated_at": "2026-11-25 23:30",
-  "et_clock": "10:30",
-  "cn_clock": "23:30",
-  "minutes_to_open": 0,
-  "minutes_open": 60,
-  "quote_ts": "2026-11-25 23:29:57",
-  "data_cn": "23:29",
+  "stage": "pre",
+  "date": "2026-11-27",
+  "weekday": "周五",
+  "generated_at": "2026-11-27 22:00",
+  "et_clock": "09:00",
+  "cn_clock": "22:00",
+  "minutes_to_open": 30,
+  "minutes_open": 0,
+  "quote_ts": "Nov 27 08:59AM EST",
+  "data_cn": "21:59",
   "indices": {
     "道琼斯": {
       "name": "道琼斯",
-      "pct": -1.72,
-      "price": 491.15
+      "pct": 1.57,
+      "price": 507.6
     },
     "纳斯达克": {
       "name": "纳斯达克",
-      "pct": -4.3,
-      "price": 610.69
+      "pct": 1.56,
+      "price": 648.03
     },
     "标普500": {
       "name": "标普500",
-      "pct": -2.79,
-      "price": 698.72
+      "pct": 1.25,
+      "price": 727.77
     },
     "罗素2000": {
       "name": "罗素2000",
-      "pct": -1.85,
-      "price": 262.21
+      "pct": 2.0,
+      "price": 272.47
     },
     "费城半导体": {
       "name": "费城半导体",
-      "pct": -6.69,
-      "price": 398.22
+      "pct": 2.87,
+      "price": 439.0
     }
   },
   "sectors": [
     {
       "name": "科技",
-      "price": 149.17,
+      "price": 159.89,
       "base": 157.09,
-      "pct": -5.04,
-      "ts": "2026-11-25 23:29:57",
-      "vol": 17804096.0,
+      "pct": 1.78,
+      "ts": "Nov 27 08:59AM EST",
+      "vol": 95675.0,
       "has_pre": true
     },
     {
       "name": "通信服务",
-      "price": 102.25,
+      "price": 106.82,
       "base": 104.45,
-      "pct": -2.11,
-      "ts": "2026-11-25 23:29:53",
-      "vol": 7125087.0,
+      "pct": 2.27,
+      "ts": "Nov 27 08:38AM EST",
+      "vol": 6905.0,
       "has_pre": true
     },
     {
       "name": "可选消费",
-      "price": 114.48,
+      "price": 119.01,
       "base": 117.72,
-      "pct": -2.75,
-      "ts": "2026-11-25 23:29:57",
-      "vol": 8990263.0,
+      "pct": 1.1,
+      "ts": "Nov 27 08:55AM EST",
+      "vol": 18590.0,
       "has_pre": true
     },
     {
       "name": "必需消费",
-      "price": 92.14,
+      "price": 91.99,
       "base": 91.88,
-      "pct": 0.28,
-      "ts": "2026-11-25 23:29:56",
-      "vol": 22142171.0,
+      "pct": 0.12,
+      "ts": "Nov 27 08:57AM EST",
+      "vol": 114715.0,
       "has_pre": true
     },
     {
       "name": "金融",
-      "price": 55.42,
+      "price": 57.11,
       "base": 56.11,
-      "pct": -1.22,
-      "ts": "2026-11-25 23:29:57",
-      "vol": 44778848.0,
+      "pct": 1.78,
+      "ts": "Nov 27 08:59AM EST",
+      "vol": 99862.0,
       "has_pre": true
     },
     {
       "name": "医疗保健",
-      "price": 182.46,
+      "price": 184.69,
       "base": 184.72,
-      "pct": -1.22,
-      "ts": "2026-11-25 23:29:57",
-      "vol": 12747570.0,
+      "pct": -0.02,
+      "ts": "Nov 27 08:58AM EST",
+      "vol": 34477.0,
       "has_pre": true
     },
     {
       "name": "工业",
-      "price": 158.82,
+      "price": 166.04,
       "base": 161.61,
-      "pct": -1.73,
-      "ts": "2026-11-25 23:29:57",
-      "vol": 8943609.0,
+      "pct": 2.74,
+      "ts": "Nov 27 08:55AM EST",
+      "vol": 3752.0,
       "has_pre": true
     },
     {
       "name": "材料",
-      "price": 50.01,
+      "price": 52.12,
       "base": 50.17,
-      "pct": -0.32,
-      "ts": "2026-11-25 23:29:56",
-      "vol": 11465219.0,
+      "pct": 3.89,
+      "ts": "Nov 27 08:53AM EST",
+      "vol": 36788.0,
       "has_pre": true
     },
     {
       "name": "能源",
-      "price": 60.53,
+      "price": 61.7,
       "base": 60.45,
-      "pct": 0.14,
-      "ts": "2026-11-25 23:29:57",
-      "vol": 32285066.0,
+      "pct": 2.07,
+      "ts": "Nov 27 08:59AM EST",
+      "vol": 282350.0,
       "has_pre": true
     },
     {
       "name": "公用事业",
-      "price": 43.51,
+      "price": 43.88,
       "base": 43.4,
-      "pct": 0.24,
-      "ts": "2026-11-25 23:29:57",
-      "vol": 22974128.0,
+      "pct": 1.11,
+      "ts": "Nov 27 08:59AM EST",
+      "vol": 56552.0,
       "has_pre": true
     },
     {
       "name": "房地产",
-      "price": 43.36,
+      "price": 43.86,
       "base": 43.46,
-      "pct": -0.23,
-      "ts": "2026-11-25 23:29:56",
-      "vol": 7168147.0,
+      "pct": 0.92,
+      "ts": "Nov 27 08:47AM EST",
+      "vol": 4271.0,
       "has_pre": true
     }
   ],
   "mag7": [
     {
       "name": "英伟达",
-      "price": 143.32,
+      "price": 152.92,
       "base": 155.38,
-      "pct": -7.76,
-      "ts": "2026-11-25 23:29:57",
-      "vol": 466849231.0,
+      "pct": -1.59,
+      "ts": "Nov 27 08:59AM EST",
+      "vol": 13246528.0,
       "has_pre": true
     },
     {
       "name": "苹果",
-      "price": 346.34,
+      "price": 358.79,
       "base": 354.07,
-      "pct": -2.18,
-      "ts": "2026-11-25 23:29:57",
-      "vol": 44972372.0,
+      "pct": 1.33,
+      "ts": "Nov 27 08:59AM EST",
+      "vol": 626858.0,
       "has_pre": true
     },
     {
       "name": "微软",
-      "price": 479.26,
+      "price": 498.86,
       "base": 496.13,
-      "pct": -3.4,
-      "ts": "2026-11-25 23:29:57",
-      "vol": 28422153.0,
+      "pct": 0.55,
+      "ts": "Nov 27 08:59AM EST",
+      "vol": 166406.0,
       "has_pre": true
     },
     {
       "name": "谷歌",
-      "price": 265.81,
+      "price": 280.06,
       "base": 279.05,
-      "pct": -4.74,
-      "ts": "2026-11-25 23:29:57",
-      "vol": 37312245.0,
+      "pct": 0.36,
+      "ts": "Nov 27 08:59AM EST",
+      "vol": 905001.0,
       "has_pre": true
     },
     {
       "name": "亚马逊",
-      "price": 237.55,
+      "price": 250.43,
       "base": 252.29,
-      "pct": -5.84,
-      "ts": "2026-11-25 23:29:57",
-      "vol": 44630068.0,
+      "pct": -0.74,
+      "ts": "Nov 27 08:59AM EST",
+      "vol": 745724.0,
       "has_pre": true
     },
     {
       "name": "Meta",
-      "price": 575.12,
+      "price": 628.59,
       "base": 589.82,
-      "pct": -2.49,
-      "ts": "2026-11-25 23:29:57",
-      "vol": 14843376.0,
+      "pct": 6.57,
+      "ts": "Nov 27 08:59AM EST",
+      "vol": 555145.0,
       "has_pre": true
     },
     {
       "name": "特斯拉",
-      "price": 362.94,
+      "price": 390.25,
       "base": 384.68,
-      "pct": -5.65,
-      "ts": "2026-11-25 23:29:57",
-      "vol": 31754969.0,
+      "pct": 1.45,
+      "ts": "Nov 27 08:59AM EST",
+      "vol": 694863.0,
       "has_pre": true
     }
   ],
   "macro": [
     {
       "name": "20年美债",
-      "price": 82.48,
+      "price": 81.83,
       "base": 81.49,
-      "pct": 1.22,
-      "ts": "2026-11-25 23:29:57",
-      "vol": 40048751.0,
+      "pct": 0.42,
+      "ts": "Nov 27 08:59AM EST",
+      "vol": 1267984.0,
       "has_pre": true
     },
     {
       "name": "美元",
-      "price": 29.7,
+      "price": 29.68,
       "base": 29.63,
-      "pct": 0.22,
-      "ts": "2026-11-25 23:28:46",
-      "vol": 1746783.0,
+      "pct": 0.17,
+      "ts": "Nov 27 08:41AM EST",
+      "vol": 761.0,
       "has_pre": true
     },
     {
       "name": "黄金",
-      "price": 314.82,
+      "price": 333.8,
       "base": 325.45,
-      "pct": -3.26,
-      "ts": "2026-11-25 23:29:57",
-      "vol": 11891828.0,
+      "pct": 2.57,
+      "ts": "Nov 27 08:59AM EST",
+      "vol": 661518.0,
       "has_pre": true
     },
     {
       "name": "原油",
-      "price": 138.4,
+      "price": 140.62,
       "base": 135.43,
-      "pct": 2.19,
-      "ts": "2026-11-25 23:29:47",
-      "vol": 3613922.0,
+      "pct": 3.83,
+      "ts": "Nov 27 08:59AM EST",
+      "vol": 186839.0,
       "has_pre": true
     }
   ],
   "movers": [
     {
-      "name": "美光",
-      "price": 563.63,
-      "base": 629.79,
-      "pct": -10.51,
-      "ts": "2026-11-25 23:29:57",
-      "vol": 36435574.0,
-      "has_pre": true
-    },
-    {
-      "name": "超威半导体",
-      "price": 374.89,
-      "base": 413.27,
-      "pct": -9.29,
-      "ts": "2026-11-25 23:29:57",
-      "vol": 50028304.0,
+      "name": "MicroStrategy",
+      "price": 84.3,
+      "base": 77.55,
+      "pct": 8.7,
+      "ts": "Nov 27 08:59AM EST",
+      "vol": 1142106.0,
       "has_pre": true
     },
     {
       "name": "ARM",
-      "price": 146.9,
+      "price": 171.66,
       "base": 161.56,
-      "pct": -9.07,
-      "ts": "2026-11-25 23:29:57",
-      "vol": 6033975.0,
+      "pct": 6.25,
+      "ts": "Nov 27 08:59AM EST",
+      "vol": 100951.0,
       "has_pre": true
     },
     {
-      "name": "MicroStrategy",
-      "price": 70.83,
-      "base": 77.55,
-      "pct": -8.67,
-      "ts": "2026-11-25 23:29:57",
-      "vol": 23355300.0,
+      "name": "SoFi",
+      "price": 13.66,
+      "base": 12.86,
+      "pct": 6.23,
+      "ts": "Nov 27 08:59AM EST",
+      "vol": 1368620.0,
       "has_pre": true
     },
     {
-      "name": "甲骨文",
-      "price": 100.03,
-      "base": 109.5,
-      "pct": -8.65,
-      "ts": "2026-11-25 23:29:57",
-      "vol": 28262668.0,
+      "name": "Coinbase",
+      "price": 108.69,
+      "base": 102.34,
+      "pct": 6.2,
+      "ts": "Nov 27 08:59AM EST",
+      "vol": 223001.0,
+      "has_pre": true
+    },
+    {
+      "name": "Rivian",
+      "price": 12.04,
+      "base": 11.35,
+      "pct": 6.12,
+      "ts": "Nov 27 08:59AM EST",
+      "vol": 255104.0,
       "has_pre": true
     }
   ],
   "judge": {
-    "breadth": "普跌",
-    "up": 3,
+    "breadth": "普涨",
+    "up": 20,
     "total": 23,
-    "avg": -2.76,
-    "struct": "半导体明显拖后腿，风险偏好正在收缩"
+    "avg": 1.52,
+    "struct": "整体同向，没有结构背离"
   },
   "earnings": [
     {
-      "symbol": "DE",
-      "name": "Deere & Company",
+      "symbol": "NAT",
+      "name": "Nordic American Tankers Limited",
       "name_cn": "",
       "sector": "",
-      "when": "盘前",
-      "eps": "$4.07"
+      "when": "",
+      "eps": "$0.10"
     },
     {
-      "symbol": "LI",
-      "name": "Li Auto Inc.",
+      "symbol": "AREC",
+      "name": "American Resources Corporation",
       "name_cn": "",
       "sector": "",
-      "when": "盘前",
+      "when": "",
       "eps": "($0.08)"
     },
     {
-      "symbol": "BZ",
-      "name": "KANZHUN LIMITED",
+      "symbol": "ENLV",
+      "name": "Enlivex Ltd.",
       "name_cn": "",
       "sector": "",
-      "when": "盘前",
-      "eps": "($0.02)"
+      "when": "",
+      "eps": "($4.48)"
     }
   ],
   "econ": [],
   "news": [
     {
-      "cn": "Jensen Huang的英伟达回归表明，中美人工智能竞赛不仅仅关乎芯片",
+      "cn": "标普500指数正处于回调阶段。熊市和经济衰退并不总是随之而来",
       "source": "CNBC",
-      "time": "22:29",
-      "url": "https://www.cnbc.com/2026/11/25/jensen-huang-nvidia-ai-talent-race.html"
+      "time": "21:21",
+      "url": "https://www.cnbc.com/2026/11/27/the-sp-500-is-in-a-correction-bear-markets-and-recessions-dont-always-follow.html"
     },
     {
-      "cn": "美国提议对中国和其他国家征收新关税，特朗普加倍使用他最喜爱的贸易武器",
-      "source": "MarketWatch",
-      "time": "22:14",
-      "url": "https://www.marketwatch.com/story/u-s-proposes-fresh-tariffs-on-china-others-as-trump-doubles-down-on-his-favorite-trade-weapon-cd9a1df9?mod=mw_rss_topstories"
+      "cn": "随着北京释放出对更广泛市场提供支持的信号，中国芯片股录得有史以来最大单日涨幅",
+      "source": "CNBC",
+      "time": "18:13",
+      "url": "https://www.cnbc.com/2026/11/27/china-chip-stocks-beijing-market-support.html"
     },
     {
-      "cn": "通胀加剧。现在美联储别无选择，只能加息",
-      "source": "MarketWatch",
-      "time": "23:08",
-      "url": "https://www.marketwatch.com/story/inflation-gets-worse-now-the-fed-no-choice-but-to-raise-u-s-interest-rates-8b0c2c1f?mod=mw_rss_topstories"
+      "cn": "科技快讯：黄仁勋的回归是否会成为动荡的人工智能市场所需要的火花？",
+      "source": "CNBC",
+      "time": "20:00",
+      "url": "https://www.cnbc.com/2026/11/27/tech-download-jensen-huang-ai-market.html"
     }
   ],
-  "diff": "盘前方向基本延续，开盘 60 分钟仍未反转。",
+  "diff": "",
   "date_hits": "27/27",
-  "text": "开盘 60 分钟 · 美东 10:30 · 北京 23:30\n\n【指数 · ETF 代理】\n道琼斯 -1.7% ｜ 纳斯达克 -4.3% ｜ 标普500 -2.8% ｜ 罗素2000 -1.9% ｜ 费城半导体 -6.7%\n\n【定调】普跌，半导体明显拖后腿，风险偏好正在收缩。\n\n【开盘后变化】盘前方向基本延续，开盘 60 分钟仍未反转。\n\n【板块】强 必需消费 +0.3%、公用事业 +0.2% ｜ 弱 科技 -5.0%、可选消费 -2.8%\n\n【七巨头】英伟达 -7.8%、苹果 -2.2%、微软 -3.4%、谷歌 -4.7%、亚马逊 -5.8%、Meta -2.5%、特斯拉 -5.7%\n\n【异动】美光 -10.5%、超威半导体 -9.3%、ARM -9.1%、MicroStrategy -8.7%、甲骨文 -8.7%，以芯片链为主\n\n【宏观】20年美债 +1.2% ｜ 美元 +0.2% ｜ 黄金 -3.3% ｜ 原油 +2.2%\n\n【海外要闻 · 北京时间】\n· Jensen Huang的英伟达回归表明，中美人工智能竞赛不仅仅关乎芯片（CNBC，22:29）\n· 美国提议对中国和其他国家征收新关税，特朗普加倍使用他最喜爱的贸易武器（MarketWatch，22:14）\n· 通胀加剧。现在美联储别无选择，只能加息（MarketWatch，23:08）\n\n指数为跟踪 ETF 报价 · 数据时间 北京 23:29 · 仅供参考，不构成投资建议"
+  "text": "距开盘 30 分钟 · 美东 09:00 · 北京 22:00\n\n【指数 · ETF 代理】\n道琼斯 +1.6% ｜ 纳斯达克 +1.6% ｜ 标普500 +1.2% ｜ 罗素2000 +2.0% ｜ 费城半导体 +2.9%\n\n【定调】普涨，整体同向，没有结构背离。\n\n【板块】强 材料 +3.9%、工业 +2.7% ｜ 弱 无明显弱势\n\n【七巨头】英伟达 -1.6%、苹果 +1.3%、微软 +0.6%、谷歌 +0.4%、亚马逊 -0.7%、Meta +6.6%、特斯拉 +1.4%\n\n【异动】MicroStrategy +8.7%、ARM +6.2%、SoFi +6.2%、Coinbase +6.2%、Rivian +6.1%\n\n【宏观】20年美债 +0.4% ｜ 美元 +0.2% ｜ 黄金 +2.6% ｜ 原油 +3.8%\n\n【海外要闻 · 北京时间】\n· 标普500指数正处于回调阶段。熊市和经济衰退并不总是随之而来（CNBC，21:21）\n· 随着北京释放出对更广泛市场提供支持的信号，中国芯片股录得有史以来最大单日涨幅（CNBC，18:13）\n· 科技快讯：黄仁勋的回归是否会成为动荡的人工智能市场所需要的火花？（CNBC，20:00）\n\n【今日关注】今日 NAT EPS 预期 $0.10；今日 AREC EPS 预期 ($0.08)；今日 ENLV EPS 预期 ($4.48)\n\n指数为跟踪 ETF 报价 · 数据时间 北京 21:59 · 仅供参考，不构成投资建议"
 }
